@@ -66,6 +66,8 @@
     { "path": "./packages/client/ui-sidebar" },
     { "path": "./packages/client/ui-brand-official" },
     { "path": "./packages/client/ui-codepilot-theme/tsconfig.client.json" },
+    { "path": "./packages/workspace/ui-worktree/tsconfig.client.json" },
+    { "path": "./packages/schedule/ui-schedule-summary/tsconfig.client.json" },
     { "path": "./packages/client/ui-conversation" },
     { "path": "./packages/client/ui-tool" },
     { "path": "./packages/client/ui-deliverables" },
