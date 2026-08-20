@@ -406,19 +406,24 @@ describe('settings domain', () => {
 
   it('serves product preference namespaces without invalidating the model catalog', async () => {
     const ctx = await harness()
+    ctx.settings.register(settingsNamespace('ui-onboarding'), z.object({ welcomeNoticeVersion: z.string() }))
     ctx.settings.register(settingsNamespace('ui-theme'), z.object({
       preference: z.union(['light', 'dark', 'system']).default('system'),
     }))
     const api = createApiProxy(ctx, DEFAULTS)
     expect(expectOk(await api.settings.describe(request({}))).namespaces.map(view => view.ns))
-      .toEqual(['ui-theme'])
-    const frames = await collectHost(api, ['host/remote-event'], 1, async () => {
+      .toEqual(['ui-onboarding', 'ui-theme'])
+    const frames = await collectHost(api, ['host/remote-event'], 2, async () => {
+      expectOk(await api.settings.mutate(request({
+        ns: 'ui-onboarding',
+        ops: [{ op: 'set', path: ['welcomeNoticeVersion'], value: 'v1' }],
+      })))
       expectOk(await api.settings.mutate(request({
         ns: 'ui-theme',
         ops: [{ op: 'set', path: ['preference'], value: 'dark' }],
       })))
     })
-    expect(frames).toEqual([forwardedSettings('ui-theme')])
+    expect(frames).toEqual([forwardedSettings('ui-onboarding'), forwardedSettings('ui-theme')])
   })
 
   it('serves the agent-preset namespace, so a browser preset picker can persist its choice', async () => {
@@ -483,23 +488,16 @@ describe('settings domain', () => {
 
   it('forwards an Agent-default settings change for model-catalog consumers', async () => {
     const ctx = await harness()
-    ctx.settings.register(AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE, z.object({
+    const defaultModel = ctx.settings.register(AGENT_DEFAULT_MODEL_SETTINGS_NAMESPACE, z.object({
       provider: z.string().required(),
       model: z.string().required(),
     }), { base: { provider: 'deepseek-official', model: 'deepseek-v4-flash' } })
     const api = createApiProxy(ctx, DEFAULTS)
-    expect(expectOk(await api.settings.describe(request({}))).namespaces
-      .find(view => view.ns === 'agent-default-model')?.value)
-      .toEqual({ provider: 'deepseek-official', model: 'deepseek-v4-flash' })
     // The shared section names the selection every blank session resolves to,
     // so an externally edited default — another tab, a
     // hand-edited settings.yaml — has to reach an open selector as well.
     const frames = await collectHost(api, ['host/remote-event'], 1, async () => {
-      const view = expectOk(await api.settings.mutate(request({
-        ns: 'agent-default-model',
-        ops: [{ op: 'set', path: ['model'], value: 'deepseek-reasoner' }],
-      })))
-      expect(view.value).toEqual({ provider: 'deepseek-official', model: 'deepseek-reasoner' })
+      await defaultModel.replace({ provider: 'deepseek-official', model: 'deepseek-reasoner' })
     })
     expect(frames).toEqual([forwardedSettings('agent-default-model')])
   })

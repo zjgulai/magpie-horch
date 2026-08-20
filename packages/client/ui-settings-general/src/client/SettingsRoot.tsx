@@ -12,24 +12,19 @@
  */
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import clsx from 'clsx'
-import { CodePilotIcon } from '@deepseek-ai/dsh-client-ui-primitives'
+import {
+  IconAgentPresetOutline16, IconCloseOutline16, IconDataOutline16,
+  IconPersonalizationOutline16, IconSettingsOutline16,
+} from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SettingsRootComponentProps, SettingsSectionRow } from './shell-contract.ts'
 import css from './SettingsRoot.module.css'
 
 /** Nav glyph by section id; unknown ids fall back to the settings gear. */
 function navIcon(id: string) {
-  const name = id === 'models'
-    ? 'model'
-    : id === 'providers'
-      ? 'provider'
-      : id === 'agent-presets'
-        ? 'assistant'
-        : id === 'plugins'
-          ? 'plugin'
-          : id === 'about'
-            ? 'about'
-            : 'settings'
-  return <CodePilotIcon name={name} className={css.navIcon} size={16} />
+  if (id === 'models') return <IconDataOutline16 className={css.navIcon} size={16} />
+  if (id === 'agent-presets') return <IconAgentPresetOutline16 className={css.navIcon} size={16} />
+  if (id === 'plugins') return <IconPersonalizationOutline16 className={css.navIcon} size={16} />
+  return <IconSettingsOutline16 className={css.navIcon} size={16} />
 }
 
 type PanelProps = {
@@ -64,23 +59,17 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
   useEffect(() => { closeButton.current?.focus() }, [])
 
   return (
-    <div className={css.overlay} role="presentation" data-pilot-settings="overlay">
-      <div className={css.mask} aria-hidden="true" data-pilot-settings="mask" onClick={onClose} />
-      <div className={css.panel} role="dialog" aria-modal="true" aria-labelledby={titleId} data-pilot-settings="panel">
-        <nav className={css.nav} data-pilot-settings="nav">
-          <div className={css.navTitle} id={titleId} data-pilot-settings="title">{renderSlot('settings.header', {})}</div>
-          <button ref={closeButton} type="button" className={css.back} data-pilot-settings-back onClick={onClose}>
-            <CodePilotIcon name="back" size={16} className={css.backGlyph} />
-            <span>{renderSlot('settings.close', {})}</span>
-          </button>
+    <div className={css.overlay} role="presentation">
+      <div className={css.mask} aria-hidden="true" onClick={onClose} />
+      <div className={css.panel} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <nav className={css.nav}>
+          <div className={css.navTitle} id={titleId}>{renderSlot('settings.header', {})}</div>
           <div className={css.navList}>
             {rows.map(row => (
               <button
                 key={row.id}
                 type="button"
                 className={clsx(css.navCell, row.id === active && css.active)}
-                data-pilot-settings-nav-item
-                data-active={row.id === active || undefined}
                 aria-current={row.id === active ? 'true' : undefined}
                 onClick={() => { onSelect(row.id) }}
               >
@@ -91,10 +80,14 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
           </div>
         </nav>
         <div className={css.content}>
-          <div className={css.header} data-pilot-settings="header">
-            <div className={css.actions} data-pilot-settings="actions">{renderSlot('settings.action', {})}</div>
+          <div className={css.header}>
+            <div className={css.actions}>{renderSlot('settings.action', {})}</div>
+            <button ref={closeButton} type="button" className={css.close} onClick={onClose}>
+              <IconCloseOutline16 size={14} />
+              <span className={css.hiddenLabel}>{renderSlot('settings.close', {})}</span>
+            </button>
           </div>
-          <div className={css.options} data-pilot-settings-options>
+          <div className={css.options}>
             {active !== undefined && renderSlot('settings.section', { close: onClose }, { only: active })}
           </div>
         </div>
@@ -129,15 +122,15 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
   const onboardingSteps = useOnboardingSteps(s => s)
   const onboardingActive = useSessions(state =>
     state.phase === 'ready'
-    // A cold desktop has no project yet. Let project selection remain the
-    // first interaction; once that selection creates/opens a blank session,
-    // model onboarding may take over. Otherwise the portalled mask is mounted
-    // over a visible project picker and makes the picker look broken.
-    && state.current !== undefined
-    && state.byId[state.current]?.blank === true)
+    && (state.current === undefined || state.byId[state.current]?.blank === true))
   const onboardingStep = onboardingActive
     ? onboardingSteps.find(step => !completedOnboarding.has(step.id))
     : undefined
+
+  useEffect(() => {
+    if (onboardingActive) return
+    setCompletedOnboarding(new Set())
+  }, [onboardingActive])
 
   const completeOnboardingStep = useCallback((id: string) => {
     setCompletedOnboarding((previous) => {

@@ -8,7 +8,6 @@
 
 import { pathToFileURL } from 'node:url'
 import { readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
 import { parseEnv } from 'node:util'
 import { basename, dirname, isAbsolute, resolve } from 'node:path'
 import * as yaml from 'js-yaml'
@@ -490,23 +489,17 @@ export async function mountRootInclude(
   patches: readonly PatchOptions[] = [],
   bareModuleBaseUrl?: string,
 ): Promise<Entry | undefined> {
-  const moduleBaseUrl = bareModuleBaseUrl ?? pathToFileURL(absoluteConfigPath).href
-  const fallbackImport = async (name: string, parentURL: string): Promise<unknown> => {
-    const specifier = isAbsolute(name) ? pathToFileURL(name).href : name
-    if (isAbsolute(name) || URL.canParse(name)) return await import(/* @vite-ignore */specifier)
-    const resolved = createRequire(parentURL).resolve(name)
-    return await import(/* @vite-ignore */pathToFileURL(resolved).href)
-  }
-  ctx.loader.fallbackImport = fallbackImport
-  ctx.loader.builtins.include = bareModuleBaseUrl === undefined && ctx.loader.internal !== undefined
+  ctx.loader.builtins.include = bareModuleBaseUrl === undefined
     ? Include
-    : class PortableRootInclude extends Include {
+    : class HostResolvedRootInclude extends Include {
       override import(name: string, getOuterStack?: () => string[]): unknown {
         const specifier = isAbsolute(name) ? pathToFileURL(name).href : name
         if (name.startsWith('.') || name.startsWith('cordis:')) return super.import(specifier, getOuterStack)
         const internal = this.ctx.loader.internal
-        if (internal !== undefined) return internal.import(specifier, moduleBaseUrl, {})
-        return fallbackImport(specifier, moduleBaseUrl)
+        /* v8 ignore next -- Node supplies the internal loader; this preserves the
+           original diagnostic for hypothetical embedders without it. */
+        if (internal === undefined) return super.import(specifier, getOuterStack)
+        return internal.import(specifier, bareModuleBaseUrl, {})
       }
     }
   // `cordis:group` alongside it: a group row is how a composition gives one

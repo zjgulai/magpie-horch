@@ -124,8 +124,6 @@ export interface ModelCatalogModel {
   name: string
   /** Optional provider-supplied description. */
   description?: string
-  /** Accepted request modalities; absence means the adapter did not declare them. */
-  inputModalities?: string[]
   /** Exact-route reasoning metadata when the adapter exposes it. */
   reasoning?: ModelReasoning
 }

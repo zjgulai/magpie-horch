@@ -1,15 +1,24 @@
 - dialog "设置":
   - navigation:
     - text: 设置
-    - button "返回"
-    - button "通用设置"
-    - button "服务商"
-    - button "插件"
-    - button "模型"
-    - button "Agent 预设"
-    - button "关于"
-  - heading "服务商" [level=2]
-  - paragraph: 连接模型服务、管理凭据，并自定义服务地址。
+    - button "通用设置":
+      - img
+      - text: 通用设置
+    - button "模型":
+      - img
+      - text: 模型
+    - button "插件":
+      - img
+      - text: 插件
+    - button "Agent 预设":
+      - img
+      - text: Agent 预设
+  - button "打开配置文件"
+  - button "关闭":
+    - img
+    - text: 关闭
+  - heading "模型" [level=2]
+  - paragraph: 填入各提供方的 API 密钥即可使用其模型。
   - status: 已保存 minimax-cn。
   - list:
     - listitem:
@@ -17,5 +26,9 @@
       - img "API 密钥已配置"
       - button "编辑 minimax-cn": 编辑
       - button "删除 minimax-cn": 删除
-  - button "添加服务商"
-  - button "添加自定义服务商"
+  - button "添加提供方":
+    - img
+    - text: 添加提供方
+  - button "添加自定义提供方":
+    - img
+    - text: 添加自定义提供方

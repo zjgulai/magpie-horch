@@ -36,12 +36,6 @@
   overflow: hidden;
 }
 
-.rightSidebarCol {
-  min-width: 0;
-  display: flex;
-  overflow: hidden;
-}
-
 .detailsCol {
   min-width: 0;
   overflow: hidden;

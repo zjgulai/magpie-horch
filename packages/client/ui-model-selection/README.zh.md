@@ -12,8 +12,6 @@ Host 报告的 `ModelSelection` 是唯一的选择事实，其中包含提供方
 
 每一份常驻目录都会直接在转发的 owner 事件 `llm/adapters-updated` 与 `settings/document-updated` 上重拉。因此提供方拓扑、提供方目录与默认选择都能收敛，Host 与 client runtime 无需再派生一个单独的模型变更别名。
 
-插件的 Host 半边还注册了 `sessionModel` 投影，它对持久的 `request/header` 快照做末值覆盖折叠。Workspace 浏览器中 `sidebar.workspaces.session.detail` 的贡献项从 Session 列表读取该投影，并在悬浮摘要里显示已记录的模型与提供方。因此悬停冷 Session 不会调用 `session.models`、组合 Agent 或改变选择状态；空白 Session 和没有 request header 的历史会省略这一行。
-
 `/client` 导出面为插件本体（`apply`/`inject`）、`ModelDirectoryResolver`、`ModelDirectory` 及其状态形状、slot 注入面类型。
 
 ## 模型体验
@@ -29,4 +27,3 @@ Host 报告的 `ModelSelection` 是唯一的选择事实，其中包含提供方
 - **无创建期或已寻址 subagent 选择**——两个入口都要求既有普通会话的 agent；没有可纳入会话创建的草稿阶段模型选择，subagent 继续执行也有意不公开独立的模型选择约定。
 - **目录名仅供呈现**——选择与持久化使用提供方／模型／推理强度 id；目录查询或确切模型元数据查询失败的提供方以不可选失败行列出，重新加载前保持原样。
 - **不能任意输入推理强度**——composer 仅提供确切模型由适配器公布的推理强度；适配器没有推理元数据时不显示 Effort 行。
-- **侧边栏摘要显示最近一次实际采用的路由**——点击选择后，只有某次请求通过 request header 持久记录了该选择，它才会出现在摘要里。

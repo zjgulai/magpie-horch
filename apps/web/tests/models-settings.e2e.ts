@@ -61,24 +61,22 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
     await page.getByRole('button', { name: '设置', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: '设置' })
     await dialog.waitFor({ timeout: 10_000 })
-    await dialog.getByRole('button', { name: '服务商' }).click()
-    await dialog.getByText('连接模型服务、管理凭据，并自定义服务地址。').waitFor({ timeout: 10_000 })
+    await dialog.getByRole('button', { name: '模型' }).click()
+    await dialog.getByText('填入各提供方的 API 密钥即可使用其模型。').waitFor({ timeout: 10_000 })
     // The dormant pi-ai adapter contributes its whole installed catalog; no
     // provider is configured yet, so the page is one add button.
-    const add = dialog.getByRole('button', { name: '添加服务商' })
+    const add = dialog.getByRole('button', { name: '添加提供方' })
     await add.waitFor({ timeout: 10_000 })
     // The button enables once the dormant catalog lands in the join.
     await expect.poll(async () => add.isEnabled(), { timeout: 10_000 }).toBe(true)
     await add.click()
-    const search = dialog.getByRole('searchbox', { name: '搜索服务商' })
-    await search.waitFor({ timeout: 10_000 })
-    // CodePilot curates the installed adapter catalog: unsupported Anthropic
-    // routes stay out, while supported providers remain searchable.
-    expect(await dialog.getByRole('button', { name: /anthropic/i }).count()).toBe(0)
-    await search.fill('minimax-cn')
-    const pick = dialog.getByRole('button', { name: /minimax-cn/i })
+    const pick = dialog.getByLabel('提供方')
     await pick.waitFor({ timeout: 10_000 })
-    await pick.click()
+    await expect.poll(async () => pick.locator('option').count(), { timeout: 10_000 }).toBeGreaterThan(30)
+    const options = await pick.locator('option').allTextContents()
+    expect(options).toContain('anthropic')
+    expect(options).toContain('minimax-cn')
+    await pick.selectOption('minimax-cn')
     await dialog.getByRole('textbox', { name: 'API 密钥', exact: true }).waitFor({ timeout: 10_000 })
     const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(EMPTY_EXPECTED, snapshot, MODE)
@@ -220,7 +218,7 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
   it('declares a route the adapter does not ship', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-declare'))
     const dialog = page.getByRole('dialog', { name: '设置' })
-    const declare = dialog.getByRole('button', { name: '添加自定义服务商' })
+    const declare = dialog.getByRole('button', { name: '添加自定义提供方' })
     await expect.poll(async () => declare.isEnabled(), { timeout: 10_000 }).toBe(true)
     await declare.click()
     await dialog.getByLabel('Provider ID').fill('acme-gateway')
@@ -232,7 +230,7 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
     expect(await dialog.getByLabel('推理强度').count()).toBe(0)
     await dialog.getByRole('button', { name: '添加模型' }).click()
     await dialog.getByLabel('模型 ID 1').fill('acme-large')
-    await dialog.getByRole('button', { name: '创建服务商', exact: true }).click()
+    await dialog.getByRole('button', { name: '创建提供方', exact: true }).click()
 
     const row = dialog.getByText('Acme Gateway', { exact: true }).first()
     await row.waitFor({ timeout: 10_000 })

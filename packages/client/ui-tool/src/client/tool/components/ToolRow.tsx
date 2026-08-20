@@ -192,13 +192,7 @@ export function ToolRow({
   // row keeps DisclosureRow's icon→chevron hover preview (its default) instead
   // of losing it with the icon.
   return (
-    <div
-      className={css.root}
-      data-variant={variant}
-      data-tool={toolName}
-      data-state={state}
-      data-beautifului="tool-chip"
-    >
+    <div className={css.root} data-variant={variant} data-tool={toolName} data-state={state}>
       {status !== null && <span className={css.visuallyHidden}>{status}</span>}
       <DisclosureRow
         rowClassName={css.row}

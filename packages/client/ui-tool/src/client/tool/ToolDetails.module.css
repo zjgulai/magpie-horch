@@ -19,7 +19,7 @@
 .code {
   margin: 0;
   padding: 16px;
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--dsw-alias-markdown-code-block);
   font-family: var(--ds-font-family-code);
   font-size: 13px;

@@ -1,14 +1,9 @@
-/** Host half: publish the last durable provider/model route as a Session projection. */
+/**
+ * Model selection plugin, node half. Pure UI plugin: the empty apply exists
+ * so the plugin appears in the host cordis.yml / Loader; the browser half
+ * ships via exports["./client"], discovered through the package.json
+ * dsh.client declaration.
+ */
 
-import type { Context } from '@deepseek-ai/cordis'
-import type {} from '@deepseek-ai/dsh-session-projection'
-import { sessionModelProjectionDefinition } from './projection.ts'
-
-export type * from './types.ts'
-
-export const inject = ['sessionProjections']
-
-/** Register the model summary projection while this plugin is loaded. */
-export function apply(ctx: Context): void {
-  ctx.sessionProjections.register(sessionModelProjectionDefinition)
-}
+/** Host plugin body — no host-side behavior for this surface plugin. */
+export function apply(): void {}

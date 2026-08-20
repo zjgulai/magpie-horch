@@ -1,7 +1,7 @@
 /**
- * Shell frame, registered into the built-in 'root' slot (the web
+ * Three-column shell frame, registered into the built-in 'root' slot (the web
  * shell renders only 'root'). Owns the grid tracks (sidebar | center |
- * docked right sidebar | details), the drag handles (pointer capture + rAF throttle), the concession
+ * details), the drag handles (pointer capture + rAF throttle), the concession
  * chain (columns.ts), and the child-slot render decisions: the sidebar slot
  * renders HERE with live parameters from the concession solve, and the
  * session-aware occupants render in fixed column positions; strict entries
@@ -20,7 +20,7 @@ import css from './AppFrame.module.css'
 /** Full composed props: runtime share + child-slot render share + store share. */
 export type AppFrameProps =
   & PropsRuntime<'root'>
-  & PropsRenderSlots<'sidebar' | 'conversation' | 'details' | 'shell.right-sidebar' | 'shell.overlay'>
+  & PropsRenderSlots<'sidebar' | 'conversation' | 'details' | 'shell.overlay'>
   & PropsStore<ReturnType<typeof createLayoutStore>>
 
 /** Center column grid item (session-body building block). */
@@ -30,12 +30,7 @@ function CenterColumn(props: { children?: ReactNode }) {
 
 /** Details column grid item; width 0 keeps the subtree mounted (never unmount on close). */
 function DetailsColumn(props: { children?: ReactNode }) {
-  return <div className={css.detailsCol} data-pilot-shell="details-column">{props.children}</div>
-}
-
-/** Additive docked workspace-tool column; an empty slot has zero intrinsic width. */
-function RightSidebarColumn(props: { children?: ReactNode }) {
-  return <div className={css.rightSidebarCol}>{props.children}</div>
+  return <div className={css.detailsCol}>{props.children}</div>
 }
 
 /**
@@ -88,7 +83,7 @@ function DragHandle(props: { side: 'sidebar' | 'details'; left: number; onStart:
   )
 }
 
-/** The shell frame with an intrinsic additive right-sidebar track (see module doc). */
+/** The three-column frame (see module doc). */
 export function AppFrame({
   useStore,
   useSessions,
@@ -144,12 +139,7 @@ export function AppFrame({
   const sidebarPreference = sidebarCollapsed
     ? 0
     : panels.sidebar === 0 ? SIDEBAR_DEFAULT : panels.sidebar
-  const cols = computeColumns(
-    viewport,
-    sidebarPreference,
-    panels.rightSidebar,
-    detailsSession === undefined ? 0 : panels.details,
-  )
+  const cols = computeColumns(viewport, sidebarPreference, detailsSession === undefined ? 0 : panels.details)
   const colsRef = useRef(cols)
   colsRef.current = cols
 
@@ -175,14 +165,12 @@ export function AppFrame({
     <div
       ref={frameRef}
       className={css.frame}
-      data-pilot-shell="frame"
-      style={{ gridTemplateColumns: `${cols.sidebar}px minmax(0, 1fr) ${cols.rightSidebar}px ${cols.details}px` }}
+      style={{ gridTemplateColumns: `${cols.sidebar}px minmax(0, 1fr) ${cols.details}px` }}
       data-sidebar-collapsed={sidebarCollapsed || undefined}
       data-details-collapsed={cols.details === 0 || undefined}
-      data-right-sidebar-collapsed={cols.rightSidebar === 0 || undefined}
       data-dragging={dragging || undefined}
     >
-      <div className={css.sidebarCol} data-pilot-shell="sidebar-column">
+      <div className={css.sidebarCol}>
         {/* Render-site slot call with live concession output: a closed
             sidebar keeps the mounted slot at the compact-rail width, and the
             component sees its rendered state as owner params decided here
@@ -200,7 +188,6 @@ export function AppFrame({
             is session-maybe; the strict details entry naturally renders
             empty while no session is current. */}
         <CenterColumn>{renderSlot('conversation', {})}</CenterColumn>
-        <RightSidebarColumn>{renderSlot('shell.right-sidebar', {})}</RightSidebarColumn>
         <DetailsColumn>{renderSlot('details', {})}</DetailsColumn>
       </>
       <div className={css.overlayLayer} data-shell-overlay>

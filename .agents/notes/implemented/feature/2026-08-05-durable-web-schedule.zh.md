@@ -12,11 +12,9 @@ Status: implemented
 
 ## 决策
 
-[`examples/web-schedule`](../../../../examples/web-schedule/README.md) overlay 与 Pilot Harness 桌面 profile 显式加载 `@deepseek-ai/dsh-time-context` 和 `@deepseek-ai/dsh-schedule`；默认 Web 配置树保持不变。Schedule 只观察插件加载后发布的根 Agent，并在该 Agent scope 中安装三个工具和一个可丢弃 owner。cold history 读取、已发布的根、child Agent 与其他 host 都不会激活它。
+[`examples/web-schedule`](../../../../examples/web-schedule/README.md) overlay 显式加载 `@deepseek-ai/dsh-time-context` 与 `@deepseek-ai/dsh-schedule`；默认 Web 配置树保持不变。Schedule 只观察插件加载后发布的根 Agent，并在该 Agent scope 中安装三个工具和一个可丢弃 owner。cold history 读取、已发布的根、child Agent 与其他 host 都不会激活它。
 
 用户可见边界是 `session-local`：原 Session 只有在 live 时才会准时运行提醒，cold 期间不发送任何外部通知；该 Session 再次 live 后才会处理 overdue 提醒。到期工作会等待 Agent 完全 idle，再通过 `followup()` 进入普通的下一轮队列；它绝不会中途引导当前轮次，也没有独立 Web 回执（[对话式交付](../simplification/2026-08-09-conversational-schedule-delivery.md)）。
-
-Pilot Harness 另行组合 `@deepseek-ai/dsh-ui-schedule-summary`。它的只读 Host 接口检查持久化内容，并从 `SessionHeader.seedLength` 起折叠，不会恢复 cold Session；浏览器半边只在 Workspace Session 悬浮卡片挂载期间贡献活动数量与最近目标。该包同时作为 CLI 与桌面端的直接依赖，使 launcher 的安装闭包 fallback 能从一次性 profile 目录解析这个 bare 插件名。这个呈现插件不拥有任何 Schedule 变更或交付行为；停用它只会移除可选悬浮行。
 
 | 场景 | 持久事实 | live 行为 | 用户可见结果 |
 | --- | --- | --- | --- |
@@ -76,7 +74,7 @@ dispatch 记录的是队列准入，而不是模型完成或用户收到提醒�
 
 ## 验证
 
-包测试以逐文件 100% coverage 固定严格回放、一次性与 Every 状态转换、创建锚点运算、只追赶最新一次、多记录批处理、fork 后缀、id 复用、偏移量与本地日历 profile、IANA 校验、夏令时缺口与重叠、时间边界、timer 分段、墙钟变化、overdue 准入、固定 framing、入队与 append 失败、barrier 恢复、注册 rollback 和完全停稳的 dispose。属性测试会在不同间隔与跳过跨度下比较 Every 计算与回放。production JSONL restart 测试证明一条 overdue 提醒会经过真实 Agent 生命周期 dispatch，并且再次 restart 后不会重复 dispatch。Host／client 测试固定浏览器时区采样、绑定到提示词的校验、只读持久化摘要、fork seed 边界与可选悬浮呈现。无密钥组装 Web 场景覆盖浏览器本地 At，以及通过普通 assistant follow-up 交付的逾期双记录 Every 批次，两者都没有回执 UI。
+包测试以逐文件 100% coverage 固定严格回放、一次性与 Every 状态转换、创建锚点运算、只追赶最新一次、多记录批处理、fork 后缀、id 复用、偏移量与本地日历 profile、IANA 校验、夏令时缺口与重叠、时间边界、timer 分段、墙钟变化、overdue 准入、固定 framing、入队与 append 失败、barrier 恢复、注册 rollback 和完全停稳的 dispose。属性测试会在不同间隔与跳过跨度下比较 Every 计算与回放。production JSONL restart 测试证明一条 overdue 提醒会经过真实 Agent 生命周期 dispatch，并且再次 restart 后不会重复 dispatch。Host／client 测试固定浏览器时区采样与绑定到提示词的校验。无密钥组装 Web 场景覆盖浏览器本地 At，以及通过普通 assistant follow-up 交付的逾期双记录 Every 批次，两者都没有回执 UI。
 
 ## 后果
 
@@ -86,4 +84,3 @@ dispatch 记录的是队列准入，而不是模型完成或用户收到提醒�
 - 用户看到普通对话输出；dispatch 绝不会夸大模型成功或 acknowledgement。
 - 每个 live 根只增加从 fold 派生的 timer、可选 idle wait 与一个 in-flight operation。
 - 固定速率周期性受到至少 5 分钟、只追赶最新一次，以及每条逾期记录只在一个批次中贡献一个发生时点的约束；日历周期性仍在此产品边界之外。
-- Pilot Harness 可以在导航中显示活动提醒元数据，而不改变提醒状态、不唤醒 cold Session，也不增加回执 UI。

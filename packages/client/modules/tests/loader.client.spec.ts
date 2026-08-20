@@ -337,14 +337,11 @@ describe('HMR reset', () => {
     let generation = 0
     const b = bench([row('a')], { a: () => ({ generation: ++generation }) })
     const first = await b.loader.import('a', '', {})
-    b.loader.invalidate('a', 'fresh-rev')
+    b.loader.invalidate('a')
     expect(b.loader.loadCache.has('a')).toBe(false)
     await b.loader.prefetch('a')
     const second = await b.loader.import('a', '', {})
-    expect(b.fetched).toEqual([
-      '/plugins/a/client.js?rev=0',
-      '/plugins/a/client.js?rev=fresh-rev',
-    ])
+    expect(b.fetched).toHaveLength(2)
     expect((first as { generation: number }).generation).toBe(1)
     expect((second as { generation: number }).generation).toBe(2)
   })

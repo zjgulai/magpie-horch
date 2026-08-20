@@ -6,7 +6,6 @@ import { afterEach } from 'vitest'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-runtime/client'
 import type { DirectoryFlowOwnerProps } from '@deepseek-ai/dsh-client-ui-workspace/client'
 import { apply, inject } from '../src/client/index.ts'
-import { pickDirectory } from '../src/client/picker.ts'
 import { NativeDirectoryFlow } from '../src/client/flow.ts'
 import { apply as nodeApply } from '../src/index.ts'
 
@@ -38,22 +37,6 @@ function owner(overrides: Partial<DirectoryFlowOwnerProps> = {}): DirectoryFlowO
 describe('directory-picker-native client half', () => {
   it('declares the services it drives', () => {
     expect(inject).toEqual(['slots', 'workspaces'])
-  })
-
-  it('uses the Electron preload chooser when present and falls back to the host seam on Web', async () => {
-    const hostPick = vi.fn(async () => '/host/project')
-    const desktopPick = vi.fn(async () => '/desktop/project')
-    Object.defineProperty(window, 'pilotHarness', {
-      configurable: true,
-      value: { pickDirectory: desktopPick },
-    })
-    await expect(pickDirectory(hostPick)).resolves.toBe('/desktop/project')
-    expect(desktopPick).toHaveBeenCalledOnce()
-    expect(hostPick).not.toHaveBeenCalled()
-
-    Reflect.deleteProperty(window, 'pilotHarness')
-    await expect(pickDirectory(hostPick)).resolves.toBe('/host/project')
-    expect(hostPick).toHaveBeenCalledOnce()
   })
 
   it('fills both directory-flow holes for declarations before or after apply, and leaves with its fiber', async () => {

@@ -1,7 +1,3 @@
 import { clientBundle } from '../tsdown.client.ts'
 
-export default clientBundle(
-  '@deepseek-ai/dsh-client-ui-model-selection',
-  ['lib/types/index.js', 'lib/types/invariant.js', 'lib/types/types.js'],
-  { hostPhase: true },
-)
+export default clientBundle('@deepseek-ai/dsh-client-ui-model-selection', ['lib/types/index.js', 'lib/types/invariant.js'])

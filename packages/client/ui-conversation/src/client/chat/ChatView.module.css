@@ -58,7 +58,7 @@
 }
 
 .callRow {
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 /* Selection still sets data-selected for details linkage; no outline —

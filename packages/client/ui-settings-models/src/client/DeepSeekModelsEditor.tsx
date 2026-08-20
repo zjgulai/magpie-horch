@@ -276,7 +276,6 @@ export function DeepSeekModelsEditor(props: DeepSeekModelsEditorProps): ReactNod
             <button
               type="button"
               className={styles['linkButton']}
-              data-pilot-settings-button
               disabled={props.disabled}
               onClick={reset}
             >
@@ -354,7 +353,6 @@ export function DeepSeekModelsEditor(props: DeepSeekModelsEditorProps): ReactNod
       <button
         type="button"
         className={styles['addModelButton']}
-        data-pilot-settings-button
         disabled={props.disabled}
         onClick={() => { props.onChange([...props.models.map(model => ({ ...model })), { id: '' }]) }}
       >

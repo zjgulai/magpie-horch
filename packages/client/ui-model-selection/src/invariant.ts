@@ -15,9 +15,9 @@ export const name = 'client-ui-model-selection-invariant'
 export const inject = ['invariants']
 
 /**
- * No runtime invariant: directory selection and the Session-list projection
- * have no independent mutable relationship; the projection is a pure durable
- * event fold, and contribution disposal is covered by the HMR-safety spec.
+ * No runtime invariant: a single command contribution registration whose disposal is
+ * proven by the HMR-safety spec — it emits no cordis events and owns no
+ * cross-plugin mutable state.
  */
 const install: InvariantInstaller = () => {}
 

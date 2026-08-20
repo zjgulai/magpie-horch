@@ -41,13 +41,8 @@ function mount({
       return SEAT_CONTENT[key]
     }) as SettingsRootComponentProps['renderSlot'],
   )
-  let currentOnboardingActive = onboardingActive
-  const useSessions = ((select: (state: unknown) => unknown) => select(currentOnboardingActive
-    ? {
-      phase: 'ready',
-      current: 'blank-session',
-      byId: { 'blank-session': { blank: true } },
-    }
+  const useSessions = ((select: (state: unknown) => unknown) => select(onboardingActive
+    ? { phase: 'ready', current: undefined, byId: {} }
     : {
       phase: 'ready',
       current: 'active-session',
@@ -77,11 +72,7 @@ function mount({
       for (const fn of [...listeners]) fn()
     })
   }
-  const setOnboardingActive = (next: boolean) => {
-    currentOnboardingActive = next
-    view.rerender(<SettingsRoot {...props} />)
-  }
-  return { view, renderSlot, bump, setOnboardingActive, listeners }
+  return { view, renderSlot, bump, listeners }
 }
 
 function openPanel() {
@@ -234,18 +225,6 @@ describe('SettingsPanel navigation', () => {
     const inactive = mount({ onboardingActive: false }).renderSlot.mock.calls
       .filter(call => call[0] === 'settings.onboarding')
     expect(inactive).toHaveLength(0)
-  })
-
-  it('keeps a skipped step complete across session transitions in the same app run', () => {
-    const { renderSlot, setOnboardingActive } = mount({ steps: [{ id: 'provider-setup', order: 0 }] })
-    const first = renderSlot.mock.calls.find(call => call[0] === 'settings.onboarding')
-    act(() => { (first?.[1] as { complete: () => void }).complete() })
-    renderSlot.mockClear()
-
-    setOnboardingActive(false)
-    setOnboardingActive(true)
-
-    expect(renderSlot.mock.calls.filter(call => call[0] === 'settings.onboarding')).toHaveLength(0)
   })
 
   it('paints no takeover chrome of its own around the mounted step', () => {

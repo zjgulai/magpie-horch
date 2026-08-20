@@ -15,7 +15,7 @@
 import { useEffect, useState } from 'react'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
-import { CodePilotIcon, IconChevronDownOutline14, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconAgentPresetOutline16, IconChevronDownOutline14, Menu } from '@deepseek-ai/dsh-client-ui-primitives'
 // Type-only: pulls the ui-conversation SlotMap merge (the hero seat).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type { AgentPresetSeatState } from './seat-store.ts'
@@ -144,7 +144,6 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
         }
       })}
       selectedId={state.current}
-      side="top"
       onSelect={(id) => {
         setOpen(false)
         void select(id)
@@ -161,11 +160,7 @@ export function AgentPresetSeat({ load, select, introduced, useAgentPresetSeat, 
           disabled={state.busy}
           onClick={() => { setOpen(value => !value) }}
         >
-          <CodePilotIcon
-            name="assistant"
-            size={16}
-            className={introducing ? `${css.seatIcon} ${css.introIcon}` : css.seatIcon}
-          />
+          <IconAgentPresetOutline16 className={introducing ? `${css.seatIcon} ${css.introIcon}` : css.seatIcon} />
           {shownLabel}
           <IconChevronDownOutline14 className={css.chevron} />
         </button>

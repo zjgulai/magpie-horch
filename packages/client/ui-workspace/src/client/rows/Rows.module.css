@@ -144,12 +144,15 @@
   white-space: nowrap;
 }
 
+.folderActive {
+  color: var(--dsw-alias-state-business-primary);
+}
+
+
 /* Project leading slot: folder by default, expand arrow on row hover. */
 .projectRow .chevron { display: none; }
-.projectRow:hover .chevron,
-.projectRow:focus-within .chevron { display: inline-flex; }
-.projectRow:hover .folder,
-.projectRow:focus-within .folder { display: none; }
+.projectRow:hover .chevron { display: inline-flex; }
+.projectRow:hover .folder { display: none; }
 
 /* Expand arrow (filled triangle): points right closed, rotates to point down open. */
 .arrow {
@@ -213,33 +216,23 @@
   flex: none;
 }
 
-/* Trailing action buttons surface for pointer hover and keyboard focus:
+/* Trailing action buttons surface on hover only (figma 27:4668 / 27:4656):
    bare 16px glyphs, gap 12, tertiary grey. */
 .rowActions {
   flex: none;
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 12px;
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
 }
 
 .projectRow:hover .rowActions,
 .sessionRow:hover .rowActions,
-.projectRow:focus-within .rowActions,
-.sessionRow:focus-within .rowActions,
 .projectRow.menuOpen .rowActions,
 .sessionRow.menuOpen .rowActions {
-  max-width: 72px;
-  opacity: 1;
-  overflow: visible;
-  pointer-events: auto;
+  display: inline-flex;
 }
 
 .sessionRow:hover .time,
-.sessionRow:focus-within .time,
 .sessionRow.menuOpen .time {
   display: none;
 }
@@ -316,47 +309,12 @@
 
 .hoverTime {
   font-size: 12px;
-  line-height: 20px;
+  line-height: 16px;
   color: #CFD3D6;
-}
-
-.hoverSummary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  min-height: 20px;
-}
-
-.hoverDetail {
-  display: grid;
-  grid-template-columns: 14px 44px minmax(0, 1fr);
-  align-items: center;
-  column-gap: 6px;
-  min-width: 0;
-  color: #CFD3D6;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.hoverDetail svg {
-  color: #ADB2B8;
-}
-
-.hoverDetailLabel {
-  color: #ADB2B8;
-}
-
-.hoverDetailValue {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: #FFFFFF;
 }
 
 .hoverStatus {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
   font-size: 12px;

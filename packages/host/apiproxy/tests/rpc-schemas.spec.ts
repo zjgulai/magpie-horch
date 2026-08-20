@@ -10,7 +10,6 @@ import {
   sessionCreateValueSchema, sessionEventSchema, sessionHistoryRequestSchema, sessionHistoryValueSchema,
   sessionIdSchema, sessionListRequestSchema, sessionListValueSchema, sessionModelsRequestSchema,
   sessionModelsValueSchema, sessionPromptRequestSchema, sessionPromptValueSchema,
-  modelCatalogModelSchema,
   sessionSearchRequestSchema, sessionSearchValueSchema, sessionSelectModelRequestSchema,
   sessionSelectModelValueSchema, sessionSummarySchema,
   sessionUpdateQueueRequestSchema, sessionUpdateQueueValueSchema,
@@ -46,14 +45,6 @@ describe('RpcId', () => {
     // No min-length: the id is an opaque echo token (see rpcIdSchema's contract).
     expect(rpcIdSchema.parse('')).toBe('')
     expect(() => rpcIdSchema.parse(42)).toThrow()
-  })
-})
-
-describe('model catalog modality schema', () => {
-  it('preserves adapter-extensible modalities on the wire', () => {
-    expect(modelCatalogModelSchema.parse({
-      id: 'voice', name: 'Voice', inputModalities: ['text', 'audio'],
-    }).inputModalities).toEqual(['text', 'audio'])
   })
 })
 

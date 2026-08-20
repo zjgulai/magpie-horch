@@ -30,10 +30,6 @@ Workspace 命中测试使用完整渲染分组区段，包括可见 Session 行�
 
 搜索在折叠时是区头操作，展开后占据标题与尾部操作的空间。查询经清除首尾空白后为空时，点击外部会收起搜索；非空查询则会保留；轨道搜索手势仍在进行期间，外部点击监听器保持未挂载（[轨道搜索自我收起](../bug-fix/2026-08-18-rail-search-outside-click-self-dismissal.md)）。紧凑的 Workspace 与 Session 行、24px 底部渐隐以及取消每个 Workspace 的 Session 数量共同节省纵向空间，同时保留导航入口。
 
-### 渐进式 Session 摘要
-
-Session 行内保留标题、相对时间以及主要的等待、运行或完成状态。延迟出现的悬浮卡片承载完整标题、Workspace、目录、Agent preset、相对时间与所有当前状态。Workspace 浏览器声明根作用域的 list 子 slot `sidebar.workspaces.session.detail`；可选领域插件分别贡献分支、已采用模型路由和活动提醒行。Owner props 只包含 Session 事实，以及可序列化的 CSS class 与图标名，因此 Workspace 包无需导入这些领域，也无需通过 owner props 传递 React 内容，就能继续控制视觉 Token。模型元数据通过 Session 列表投影到达，不会激活冷历史；Worktree 与 Schedule 各自持有只在悬浮卡片挂载期间存在的只读 Host 查询。
-
 ## 考虑过的替代方案
 
 **把每次活动置顶写入 `Workspace.sessionIds`。** 浏览器呈现偏好会在用户每次提交提示词时覆盖共享的 Host 记账。
@@ -48,18 +44,13 @@ Session 行内保留标题、相对时间以及主要的等待、运行或完成
 
 **让浏览器拒绝列表外松手。** 应用会提交最后一个有效标记，而浏览器同时播放拒绝动画，形成相互矛盾的反馈。
 
-**在更高的列表卡片里直接呈现每项 Session 事实。** 分支、模型、提醒、路径与状态会降低常规扫读速度，并减少屏幕内可见的对话数量。延迟悬浮既保留紧凑列表，又让丰富上下文只需一次手势即可查看。
-
-**由 Workspace 包读取所有可选领域数据。** 这会让导航包依赖 Git、模型路由和 Schedule 存储。子 slot 让每项读取与生命周期留在拥有该事实的插件中。
-
 ## 后果
 
 - Workspace 顺序通过 Host 持久并共享；分组方式、打开状态、每个记账的 Session 视图顺序和查询状态仍是浏览器本地呈现偏好。Ungrouped 和单列表支持相同的拖拽与置顶规则，但因没有单一 Workspace 记账，其顺序只保存在浏览器本地。
 - 最近更新模式会在进入时执行完整时间排序，随后保持手动调整，直到 user prompt 或 steer 推进某条 Session 并将其置顶。返回手动排序会保留所有当前位置。
 - 未执行明确的**展开其余**手势时，打开 Workspace 最多显示五条 Session；关闭分组只重置这项临时手势。
 - Host Session 记账继续采用[会话列表浏览与 Workspace 手动排序](2026-07-25-session-list-browsing-and-manual-order.md)确立的手动顺序含义。
-- 停用 Worktree、模型选择或 Schedule 摘要只会移除对应插件的悬浮行；紧凑 Session 列表和其他详情仍可继续工作。
 
 ## 测试
 
-领域与 Host 测试覆盖持久 Workspace 移动、无操作与无效锚点、重启恢复、完整顺序 RPC 响应、顺序帧以及每条 Host stream 基线只读取一份 Workspace 快照。运行时测试覆盖乐观顺序、帧／响应优先级、重叠拒绝后恢复 Host 已确认顺序、重连基线以及 New Session 目标优先级。UI 测试覆盖五行折叠、临时展开重置、Workspace 移除后清理持久状态、保持顺序的模式切换、一次性最近更新置顶、浏览器本地 Ungrouped 与单列表拖拽持久化、无层级单列表行左侧间距、当前视图标记、展开区段的 Workspace 命中、未裁切的第一条插入边界、列表外 Workspace 与 Session 松手、搜索收起规则、紧凑 CSS 尺寸、延迟详情挂载以及传给子详情插件的纯 owner 数据。
+领域与 Host 测试覆盖持久 Workspace 移动、无操作与无效锚点、重启恢复、完整顺序 RPC 响应、顺序帧以及每条 Host stream 基线只读取一份 Workspace 快照。运行时测试覆盖乐观顺序、帧／响应优先级、重叠拒绝后恢复 Host 已确认顺序、重连基线以及 New Session 目标优先级。UI 测试覆盖五行折叠、临时展开重置、Workspace 移除后清理持久状态、保持顺序的模式切换、一次性最近更新置顶、浏览器本地 Ungrouped 与单列表拖拽持久化、无层级单列表行左侧间距、当前视图标记、展开区段的 Workspace 命中、未裁切的第一条插入边界、列表外 Workspace 与 Session 松手、搜索收起规则和紧凑 CSS 尺寸。

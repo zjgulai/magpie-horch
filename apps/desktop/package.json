@@ -57,8 +57,6 @@
     "@deepseek-ai/dsh-time-context": "workspace:^",
     "@deepseek-ai/dsh-timeout": "workspace:^",
     "@deepseek-ai/dsh-schedule": "workspace:^",
-    "@deepseek-ai/dsh-ui-schedule-summary": "workspace:^",
-    "@deepseek-ai/dsh-ui-worktree": "workspace:^",
     "@deepseek-ai/dsh-workflow": "workspace:^"
   },
   "devDependencies": {

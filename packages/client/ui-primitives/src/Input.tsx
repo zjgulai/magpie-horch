@@ -15,7 +15,7 @@ export function Input({ icon, className, ...rest }: {
   className?: string
 } & InputHTMLAttributes<HTMLInputElement>) {
   return (
-    <span className={clsx(css.wrap, className)} data-pilot-input-wrap>
+    <span className={clsx(css.wrap, className)}>
       {icon != null && <span className={css.icon}>{icon}</span>}
       <input className={css.input} {...rest} />
     </span>

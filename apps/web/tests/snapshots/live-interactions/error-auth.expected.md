@@ -3,6 +3,9 @@
     - button "Reply with a one-sentence description" [disabled]
   - img
   - text: Standard mode
+  - button "Session log":
+    - text: Session log
+    - img
   - tablist:
     - tab "Chat" [selected]
     - tab "Trajectory"
@@ -17,10 +20,11 @@
   - text: This turn failedAPI key is invalid
   - code: AUTH
 - textbox "Message the agent"
-- button "Commands"
+- button "Commands":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "Context details"
 - button "Send message" [disabled]
+- text: 1 turns · 1 steps

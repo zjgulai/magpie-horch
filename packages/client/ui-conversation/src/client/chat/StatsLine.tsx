@@ -1,11 +1,11 @@
-// Settled-node identity prevents stream-delta updates from rerendering this readout.
-// The built-in shell mounts it inside ContextMeter's popover; plugins can still
-// reuse the line presentation when they need a compact custom placement.
+// Settled-node identity prevents stream-delta updates from rerendering this row.
+// Mounted on 'conversation.composer.dock' so it sticks with the composer in the
+// active conversation scrollport (see ConversationRoot data-conversation-scroll).
 
 import { Fragment, memo, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ConversationSnapshot, UseProjection } from '@deepseek-ai/dsh-client-runtime/client'
-import type { MaybeSnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
+import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-ui-slots'
 // Type-only: merges the sessionStats key into SessionProjectionMap for useProjection.
 import type {} from '@deepseek-ai/dsh-session-stats/client'
 import type { ContextPressureProjection, TokenUsageProjection } from '@deepseek-ai/dsh-token-meter/client'
@@ -154,18 +154,14 @@ export function contextOccupancy(
 
 /** Props: the conversation-snapshot selector plus the projection read seat. */
 export interface StatsLineProps {
-  useSession: MaybeSnapshotSelectorHook<ConversationSnapshot>
+  useSession: SnapshotSelectorHook<ConversationSnapshot>
   useProjection: UseProjection
   /** The owning dock's locale seat. */
   t: ComposerBarProps['t']
-  /** Compact rows inside the context card, or the legacy single-line strip. */
-  display?: 'line' | 'context'
 }
 
-export const StatsLine = memo(function StatsLine({
-  useSession, useProjection, t, display = 'line',
-}: StatsLineProps) {
-  const settledNodes = useSession(s => s.chat.legacy.nodes) ?? []
+export const StatsLine = memo(function StatsLine({ useSession, useProjection, t }: StatsLineProps) {
+  const settledNodes = useSession(s => s.chat.legacy.nodes)
   const usage = useProjection('tokenUsage')
   // Every figure rides the durable sessionStats projection, so paging and
   // compaction cannot change any of them; an assembly without the unit falls
@@ -213,10 +209,6 @@ export const StatsLine = memo(function StatsLine({
   const rootRef = useRef<HTMLDivElement | null>(null)
   const [truncated, setTruncated] = useState(false)
   useLayoutEffect(() => {
-    if (display !== 'line' || groups.length === 0) {
-      setTruncated(false)
-      return
-    }
     const el = rootRef.current
     if (el === null) return
     const measure = () => { setTruncated(el.scrollWidth > el.clientWidth) }
@@ -225,18 +217,11 @@ export const StatsLine = memo(function StatsLine({
     const observer = new ResizeObserver(measure)
     observer.observe(el)
     return () => { observer.disconnect() }
-  }, [display, groups.length, line])
+  }, [line])
   if (groups.length === 0) return null
-  if (display === 'context') {
-    return (
-      <div className={css.context} data-beautifului="context-stats">
-        {groups.map(group => <div key={group} className={css.contextRow}>{group}</div>)}
-      </div>
-    )
-  }
   return (
     <Tooltip label={line} side="top" delayMs={500} disabled={!truncated}>
-      <div ref={rootRef} className={css.root} data-pilot-stats-line>
+      <div ref={rootRef} className={css.root}>
         {groups.map((group, i) => (
           <Fragment key={group}>
             {i > 0 && <><span className={css.sep} aria-hidden>|</span>{' '}</>}

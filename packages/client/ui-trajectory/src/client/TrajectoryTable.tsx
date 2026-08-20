@@ -4,8 +4,10 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { CSSProperties, ReactNode } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import {
-  CodePilotIcon,
   IconChevronRightOutline14,
+  IconSettingsOutline16,
+  IconSparkle16,
+  IconUserOutline16,
   JsonTree,
   MarkdownText,
   Tooltip,
@@ -43,14 +45,75 @@ const KIND_LABEL: Record<TrajectoryCellKind, string> = {
   subtool: 'SUBTOOL',
 }
 
+function ToolWrenchIcon(): ReactNode {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      data-role-icon="wrench"
+      aria-hidden="true"
+    >
+      <path d="M14 3.3a3.8 3.8 0 0 1-4.8 4.8l-5.1 5.1a1.6 1.6 0 1 1-2.3-2.3l5.1-5.1A3.8 3.8 0 0 1 11.7 1l-2.3 2.3 2.3 2.3L14 3.3Z" />
+    </svg>
+  )
+}
+
+function InformationIcon(): ReactNode {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      data-role-icon="information"
+      aria-hidden="true"
+    >
+      <circle cx="8" cy="8" r="6.7" />
+      <circle cx="8" cy="5.5" r=".85" fill="currentColor" stroke="none" />
+      <path d="M8 7.75v3.4" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
+function CompactedIcon(): ReactNode {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      data-role-icon="compacted"
+      aria-hidden="true"
+    >
+      <path d="m2.5 2.5 3.75 3.75M3 6.25h3.25V3" />
+      <path d="m13.5 2.5-3.75 3.75M13 6.25H9.75V3" />
+      <path d="m2.5 13.5 3.75-3.75M3 9.75h3.25V13" />
+      <path d="m13.5 13.5-3.75-3.75M13 9.75H9.75V13" />
+    </svg>
+  )
+}
+
 const KIND_ICON: Record<TrajectoryCellKind, ReactNode> = {
-  system: <CodePilotIcon name="settings" size={13} />,
-  user: <CodePilotIcon name="user" size={13} />,
-  context: <span data-role-icon="information"><CodePilotIcon name="about" size={13} /></span>,
-  compacted: <span data-role-icon="compacted"><CodePilotIcon name="collapse" size={13} /></span>,
-  message: <CodePilotIcon name="sparkles" size={13} />,
-  tool: <span data-role-icon="wrench"><CodePilotIcon name="tool" size={13} /></span>,
-  subtool: <span data-role-icon="wrench"><CodePilotIcon name="tool" size={13} /></span>,
+  system: <IconSettingsOutline16 size={13} />,
+  user: <IconUserOutline16 size={13} />,
+  context: <InformationIcon />,
+  compacted: <CompactedIcon />,
+  message: <IconSparkle16 size={13} />,
+  tool: <ToolWrenchIcon />,
+  subtool: <ToolWrenchIcon />,
 }
 
 interface TableRecord {
@@ -1100,7 +1163,22 @@ function AssistantToolCalls({
               if (call.callId !== undefined) onOpenCall(call.callId)
             }}
           >
-            <CodePilotIcon name="tool" size={12} className={css.assistantToolCallIcon} />
+            <svg
+              className={css.assistantToolCallIcon}
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             <span className={css.assistantToolCallText}>
               <span className={css.assistantToolCallName}>
                 {call.toolName ?? 'tool-call'}
@@ -1117,7 +1195,24 @@ function AssistantToolCalls({
 }
 
 function ToolGlyph() {
-  return <CodePilotIcon name="tool" size={12} className={css.toolCatalogIcon} />
+  return (
+    <svg
+      className={css.toolCatalogIcon}
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
 }
 
 function ToolCatalog({ tools }: { tools: ConversationPromptSnapshot['tools'] }) {

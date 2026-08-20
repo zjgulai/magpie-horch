@@ -46,8 +46,3 @@ root.loader.update(id, { config: { enabled: false } })
 | `loader.locate(fiber?)` | Return the loader entry id that owns a fiber. |
 
 For file-backed trees, use `@cordisjs/plugin-include`.
-
-When the private ESM loader is unavailable, a closed host may provide
-`loader.fallbackImport(specifier, parentURL)`. The callback applies to every
-nested entry tree without introducing host-specific modules into browser
-builds; relative paths keep their normal ESM behavior.

@@ -4,7 +4,6 @@
    a 2px active bar. */
 
 .root {
-  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -29,20 +28,20 @@
 .header {
   position: relative;
   flex: none;
-  min-height: 52px;
-  padding: 0 28px 0 20px;
-  border-bottom: none;
-  -webkit-app-region: drag;
+  padding: 12px 28px 0 20px;
+  border-bottom: 1px solid transparent;
 }
 
-.headerInner {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  max-width: 960px;
-  min-height: 52px;
-  margin-inline: auto;
+.header::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  left: 0;
+  z-index: 0;
+  height: 1px;
+  background: var(--dsw-alias-border-l2);
+  pointer-events: none;
 }
 
 /* Blank hero/settling: keep the strict Session header mounted without taking
@@ -54,10 +53,8 @@
 .titleRow {
   display: flex;
   align-items: center;
-  flex: 1 1 auto;
-  gap: 10px;
-  min-width: 0;
-  min-height: 36px;
+  gap: 0;
+  min-height: 32px;
 }
 
 .titleCluster {
@@ -96,7 +93,7 @@
   overflow: hidden;
   padding: 4px 8px;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   font-size: 14px;
   line-height: 20px;
@@ -128,7 +125,7 @@
   flex: none;
   align-items: center;
   gap: 8px;
-  margin-left: 0;
+  margin-left: 20px;
 }
 
 .headerUtilities:empty {
@@ -140,54 +137,44 @@
   position: relative;
   z-index: 1;
   display: flex;
-  flex: none;
-  gap: 4px;
-  padding: 3px;
-  border-radius: 14px;
-  background: var(--dsw-alias-bg-layer-1);
+  gap: 36px;
+  margin-top: 4px;
+  padding-left: 8px;
 }
 
 /* figma .Tab 34:11442: 13/16 text (figma wt510, rendered 500), gap 8 to the 2px bar. */
 .tab {
   position: relative;
-  min-width: 58px;
-  height: 30px;
-  padding: 0 12px;
+  padding: 0 0 11px;
   border: none;
-  border-radius: 8px;
   background: transparent;
   font-size: 13px;
-  line-height: 20px;
+  line-height: 16px;
   font-weight: 500;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
 }
 
-.tabActive {
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-bg-layer-1);
-  box-shadow: var(--dsw-shadow-lv1);
-}
-
-.tab:hover:not(.tabActive) {
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-interactive-bg-hover);
-}
-
-.header button {
-  -webkit-app-region: no-drag;
-}
-
-/* The blank/new-session page has no session header. Keep its otherwise empty
-   top strip draggable in the desktop client without changing web geometry. */
-:global(html[data-pilot-desktop]) .root[data-phase='hero']::before,
-:global(html[data-pilot-desktop]) .root[data-phase='settling']::before {
+.tab::after {
   content: '';
   position: absolute;
-  inset: 0 0 auto;
-  z-index: 6;
-  height: 40px;
-  -webkit-app-region: drag;
+  right: 0;
+  bottom: 1px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+/* Selected tab is blue, not ink: brand-primary resolves to neutral black in
+   this token sheet, so the selected state rides the business blue — the
+   nearest semantic token that stays blue in both themes. */
+.tabActive {
+  color: var(--dsw-alias-state-business-primary);
+}
+
+.tabActive::after {
+  background: var(--dsw-alias-state-business-primary);
 }
 
 .viewArea {
@@ -319,14 +306,15 @@
   left: 0;
 }
 
-/* Hero phase: the composer stack (hero chrome + card + action row) is
+/* Hero phase: the composer stack (hero chrome + workspace row + card) is
    flex-centered in the column; composer phase docks it at the bottom. Flex,
    NOT absolute+transform: a transform would make this box the containing
    block for position:fixed descendants (pickers/modals), shrinking them. */
 .composerHero {
   position: relative; /* .heroGlow positioning context */
   align-self: center;
-  /* CodePilot's composer action row sits below the prompt card. */
+  /* figma 75:8208 drew 12 between all three rows; the workspace row now sits
+     8 above the card (its margin-top restores 12 under the hero chrome). */
   gap: 8px;
   /* Foot inside the centered box floats the stack a bit above true center. */
   padding-bottom: 32px;
@@ -357,7 +345,10 @@
   align-items: center;
   gap: 2px;
   min-width: 0;
-  padding: 0 20px 2px;
+  margin-top: 4px;
+  /* figma drew px 8; nudged +12 so the chip's folder glyph lines up closer to
+     the card's inner controls below. */
+  padding-left: 20px;
 }
 
 /* Hero: the composer sits inside the session scroll body; center there so

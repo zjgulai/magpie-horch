@@ -1,34 +1,43 @@
 - button "New session"
-- button "Collapse sidebar"
-- button "New session": New Session
+- button "Collapse sidebar":
+  - img
+- button "New session":
+  - img
+  - text: New Session
 - text: Workspaces
-- button "Search sessions"
+- button "Search sessions":
+  - img
 - textbox "Search sessions..."
-- button "View options"
-- button "Add workspace"
+- button "View options":
+  - img
+- button "Add workspace":
+  - img
 - tree "Sessions":
-  - treeitem "workspace Workspace actions for workspace New session in workspace" [expanded]:
+  - treeitem "workspace" [expanded]:
+    - img
     - text: workspace
-    - button "Workspace actions for workspace"
-    - button "New session in workspace"
   - treeitem "New Session" [selected]
-- button "Settings"
-- text: Pilot Harness Preview Start a conversation, ask a question, or explore an idea.
+- button "Settings":
+  - img
+  - text: Settings
+- text: Into the Unknown Preview
+- button "Choose workspace":
+  - img
+  - text: workspace
+  - img
+- button "Standard mode":
+  - img
+  - text: Standard mode
+  - img
 - textbox "Describe what you want to build"
-- button "Commands"
+- button "Commands":
+  - img
 - tooltip "Commands"
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "Context details"
 - button "Send message" [disabled]
-- button "Choose workspace":
-  - text: workspace
-  - img
-- button "Standard mode":
-  - text: Standard mode
-  - img
 - text: Details
 - button "Close details"
 - text: Click a tool row in the message flow to view its details

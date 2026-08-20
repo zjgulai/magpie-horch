@@ -197,7 +197,7 @@ export function AgentPresetSection(props: AgentPresetSectionProps): ReactNode {
     return (
       <div className={css.section}>
         <p className={css.error} role="alert">{`${t('error')} ${detail}`}</p>
-        <button type="button" className={css.secondaryButton} data-pilot-settings-button onClick={() => { void load() }}>
+        <button type="button" className={css.secondaryButton} onClick={() => { void load() }}>
           {t('retry')}
         </button>
       </div>

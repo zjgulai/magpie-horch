@@ -4,11 +4,11 @@ import { SessionLogDownloadDialog, type SessionLogDownloadDialogProps } from './
 import css from './HeaderAction.module.css'
 
 /**
- * Render the Trajectory export action and its shared result dialog.
+ * Render the Session Header export capsule and its shared result dialog.
  * @param props - Session runtime, download controller, and localized dialog copy.
- * @returns the Trajectory action and Session-scoped dialog.
+ * @returns the persistent Header action and Session-scoped dialog.
  */
-export function SessionLogDownloadTrajectoryAction(props: SessionLogDownloadDialogProps): ReactNode {
+export function SessionLogDownloadHeaderAction(props: SessionLogDownloadDialogProps): ReactNode {
   const { sessionId, useSessionLogDownload, request } = props
   const entry = useSessionLogDownload(state => state.bySession[String(sessionId)])
   const busy = entry?.status === 'downloading'
@@ -20,12 +20,10 @@ export function SessionLogDownloadTrajectoryAction(props: SessionLogDownloadDial
         className={css.sessionLogButton}
         disabled={busy}
         aria-busy={busy}
-        aria-label={busy ? props.t('action.exporting') : props.t('action.export')}
-        title={busy ? props.t('action.exporting') : props.t('action.export')}
         onClick={() => { void request(sessionId) }}
       >
-        <IconDownloadOutline16 size={14} />
-        <span>{busy ? props.t('action.exporting') : props.t('action.export')}</span>
+        <span>Session log</span>
+        <IconDownloadOutline16 size={12} />
       </button>
       <SessionLogDownloadDialog {...props} />
     </>

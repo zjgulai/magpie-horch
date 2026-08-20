@@ -26,21 +26,15 @@ function projections(values: Record<string, unknown>): ContextMeterProps['usePro
   return (key: string) => values[key]
 }
 
-function noSession<S>(_select: (snapshot: never) => S): S | undefined {
-  return undefined
-}
-
 function meter(values: Record<string, unknown>, translate: ContextMeterProps['t'] = t) {
-  return render(<ContextMeter useSession={noSession} useProjection={projections(values)} t={translate} />)
+  return render(<ContextMeter useProjection={projections(values)} t={translate} />)
 }
 
 describe('ContextMeter', () => {
-  it('keeps the context details control available before pressure is known', () => {
-    const view = meter({})
-    const trigger = view.getByRole('button', { name: '上下文详情' })
-    expect(view.container.querySelector('[role="dialog"]')).toBeNull()
-    fireEvent.click(trigger)
-    expect(view.container.querySelector('[role="dialog"]')?.textContent).toContain('上下文详情')
+  it('renders nothing until both pressure and capacity are known', () => {
+    expect(meter({}).container.textContent).toBe('')
+    expect(meter({ contextPressure: { pressureTokens: 32_000 } }).container.textContent).toBe('')
+    expect(meter({ contextPressure: { contextWindow: 128_000 } }).container.textContent).toBe('')
   })
 
   it('shows the occupancy ring and opens the breakdown panel on click', () => {
@@ -118,44 +112,26 @@ describe('ContextMeter', () => {
     expect(panel.getElementsByClassName(segmentClass)).toHaveLength(1)
   })
 
-  it('keeps an open details panel stable while provider capacity changes', () => {
+  it('closes when capacity disappears and stays closed when it returns', () => {
     let values: Record<string, unknown> = {
       contextPressure: { pressureTokens: 32_000, contextWindow: 128_000 },
       contextBreakdown: BREAKDOWN,
     }
-    const view = render(<ContextMeter useSession={noSession} useProjection={(key: string) => values[key]} t={t} />)
+    const view = render(<ContextMeter useProjection={(key: string) => values[key]} t={t} />)
     fireEvent.click(view.getByRole('button', { name: '上下文已用 25%' }))
     expect(view.container.querySelector('[role="dialog"]')).not.toBeNull()
 
     values = { contextPressure: { pressureTokens: 32_000 }, contextBreakdown: BREAKDOWN }
-    view.rerender(<ContextMeter useSession={noSession} useProjection={(key: string) => values[key]} t={t} />)
-    expect(view.getByRole('button', { name: '上下文详情' }).getAttribute('aria-expanded')).toBe('true')
+    view.rerender(<ContextMeter useProjection={(key: string) => values[key]} t={t} />)
+    expect(view.container.textContent).toBe('')
 
     values = {
       contextPressure: { pressureTokens: 32_000, contextWindow: 128_000 },
       contextBreakdown: BREAKDOWN,
     }
-    view.rerender(<ContextMeter useSession={noSession} useProjection={(key: string) => values[key]} t={t} />)
-    expect(view.getByRole('button', { name: '上下文已用 25%' }).getAttribute('aria-expanded')).toBe('true')
-    expect(view.container.querySelector('[role="dialog"]')).not.toBeNull()
-  })
-
-  it('moves token, cache, count, and timing statistics into the context panel', () => {
-    const view = meter({
-      sessionStats: {
-        turns: 2, steps: 3, llmMs: 2_000, toolMs: 0,
-        ttftMs: 200, ttftSteps: 1, decodeMs: 1_000, decodeTokens: 20,
-      },
-      tokenUsage: {
-        uncachedInputTokens: 10, cacheReadTokens: 90, cacheWriteTokens: 0, outputTokens: 5,
-      },
-    })
-    expect(view.container.textContent).not.toContain('缓存命中')
-    fireEvent.click(view.getByRole('button', { name: '上下文详情' }))
-    const panel = view.container.querySelector('[role="dialog"]')!
-    expect(panel.textContent).toContain('2 轮 · 3 步')
-    expect(panel.textContent).toContain('缓存命中 90%')
-    expect(panel.textContent).toContain('输入 100 tok · 输出 5 tok')
+    view.rerender(<ContextMeter useProjection={(key: string) => values[key]} t={t} />)
+    expect(view.getByRole('button', { name: '上下文已用 25%' }).getAttribute('aria-expanded')).toBe('false')
+    expect(view.container.querySelector('[role="dialog"]')).toBeNull()
   })
 
   it('closes on outside pointerdown and Escape — but not inside clicks', () => {

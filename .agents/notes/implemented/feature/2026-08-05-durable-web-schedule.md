@@ -12,11 +12,9 @@ Busy Agents, long waits, wall-clock changes, cold Sessions, forks, persistence f
 
 ## Decision
 
-The [`examples/web-schedule`](../../../../examples/web-schedule/README.md) overlay and the Pilot Harness desktop profile explicitly load `@deepseek-ai/dsh-time-context` and `@deepseek-ai/dsh-schedule`; the default Web tree remains unchanged. Schedule observes only root Agents published after the plugin loads and installs its three tools plus one disposable owner in that Agent scope. Cold history reads, already-published roots, child Agents, and other hosts do not activate it.
+The [`examples/web-schedule`](../../../../examples/web-schedule/README.md) overlay explicitly loads `@deepseek-ai/dsh-time-context` and `@deepseek-ai/dsh-schedule`; the default Web tree remains unchanged. Schedule observes only root Agents published after the plugin loads and installs its three tools plus one disposable owner in that Agent scope. Cold history reads, already-published roots, child Agents, and other hosts do not activate it.
 
 The user-visible boundary is `session-local`: the original Session runs an on-time reminder only while live, does no external notification while cold, and processes an overdue reminder after it becomes live again. Due work waits until the Agent is fully idle, then enters the ordinary next-turn queue through `followup()`; it never steers the current turn and has no independent Web receipt ([conversational delivery](../simplification/2026-08-09-conversational-schedule-delivery.md)).
-
-Pilot Harness separately composes `@deepseek-ai/dsh-ui-schedule-summary`, whose read-only Host endpoint inspects persistence and folds from `SessionHeader.seedLength` without resuming a cold Session. Its browser half contributes the active count and nearest target only while the Workspace Session hover card is mounted. The package is a direct CLI dependency as well as a desktop dependency so the launcher's installation-closure fallback makes the bare plugin name resolvable from disposable profile directories. This presentation plugin owns no Schedule mutation or delivery behavior; disabling it removes only the optional hover row.
 
 | Scenario | Durable fact | Live behavior | User-visible result |
 | --- | --- | --- | --- |
@@ -76,7 +74,7 @@ Dispatch records queue admission, not model completion or user receipt. Framing 
 
 ## Verification
 
-Package tests pin strict replay, one-shot and Every transitions, creation-anchor arithmetic, latest-only catch-up, multi-record batching, fork suffixes, id reuse, offset and local-calendar profiles, IANA validation, daylight-saving gaps and overlaps, time bounds, timer segmentation, wall-clock movement, overdue admission, fixed framing, enqueue and append failures, barrier recovery, registration rollback, and quiescent disposal at per-file 100% coverage. A property test compares Every calculation and replay across varied intervals and skipped spans. A production JSONL restart test proves one overdue reminder dispatches through the real Agent lifecycle and does not redispatch after another restart. Host/client tests pin browser-zone sampling, prompt-bound validation, persistence-only summary reads, fork seed boundaries, and optional hover rendering. Keyless assembled Web scenarios cover browser-local At and an overdue two-record Every batch through ordinary assistant follow-ups with no receipt UI.
+Package tests pin strict replay, one-shot and Every transitions, creation-anchor arithmetic, latest-only catch-up, multi-record batching, fork suffixes, id reuse, offset and local-calendar profiles, IANA validation, daylight-saving gaps and overlaps, time bounds, timer segmentation, wall-clock movement, overdue admission, fixed framing, enqueue and append failures, barrier recovery, registration rollback, and quiescent disposal at per-file 100% coverage. A property test compares Every calculation and replay across varied intervals and skipped spans. A production JSONL restart test proves one overdue reminder dispatches through the real Agent lifecycle and does not redispatch after another restart. Host/client tests pin browser-zone sampling and prompt-bound validation. Keyless assembled Web scenarios cover browser-local At and an overdue two-record Every batch through ordinary assistant follow-ups with no receipt UI.
 
 ## Consequences
 
@@ -86,4 +84,3 @@ Package tests pin strict replay, one-shot and Every transitions, creation-anchor
 - Users see normal conversation output; dispatch never overstates model success or acknowledgement.
 - Each live root adds only fold-derived timers, an optional idle wait, and one in-flight operation.
 - Fixed-rate recurrence is bounded by a five-minute minimum, latest-only catch-up, and one batched occurrence per overdue record; calendar recurrence remains outside this product boundary.
-- Pilot Harness can expose active reminder metadata in navigation without changing reminder state, waking cold Sessions, or adding a receipt UI.

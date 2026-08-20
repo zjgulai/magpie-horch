@@ -1,8 +1,7 @@
 /** Trajectory toolbar: timeline and ledger fold controls. */
 
-import type { ReactNode } from 'react'
 import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
-import { CodePilotIcon, IconSearchOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconSearchOutline16 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { NS } from './locales.ts'
 import css from './TrajectoryToolbar.module.css'
 
@@ -27,8 +26,6 @@ export interface TrajectoryToolbarProps {
   searchQuery: string
   /** Update the live ledger search query. */
   onSearchQueryChange: (query: string) => void
-  /** Session-scoped utilities contributed by other plugins. */
-  utilities?: ReactNode
   /** Translate a toolbar dictionary key. */
   t: TranslateNS<typeof NS>
 }
@@ -49,16 +46,10 @@ export function TrajectoryToolbar({
   onToggleAllAssistants,
   searchQuery,
   onSearchQueryChange,
-  utilities,
   t,
 }: TrajectoryToolbarProps) {
   return (
-    <div
-      className={css.root}
-      role="toolbar"
-      aria-label={t('toolbar.aria')}
-      data-beautifului="thinking-toolbar"
-    >
+    <div className={css.root} role="toolbar" aria-label={t('toolbar.aria')}>
       <div className={css.inner}>
         <div className={css.actions}>
           <button
@@ -69,7 +60,15 @@ export function TrajectoryToolbar({
             title={actualDuration ? t('toolbar.useEqualWidth') : t('toolbar.useActualDuration')}
             onClick={() => { onActualDurationChange(!actualDuration) }}
           >
-            <CodePilotIcon name="clock" size={12} className={css.toggleIcon} />
+            <svg
+              className={css.toggleIcon}
+              viewBox="0 0 16 16"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle cx="8" cy="8" r="5.25" />
+              <path d="M8 4.75V8l2.25 1.5" />
+            </svg>
             {t('toolbar.duration')}
           </button>
           <button
@@ -93,7 +92,9 @@ export function TrajectoryToolbar({
             title={allTurnsCollapsed ? t('toolbar.expandTurns') : t('toolbar.collapseTurns')}
             onClick={onToggleAllTurns}
           >
-            <CodePilotIcon name={allTurnsCollapsed ? 'expand' : 'collapse'} size={13} className={css.actionIcon} />
+            <span className={css.actionIcon} aria-hidden="true">
+              {allTurnsCollapsed ? '⊞' : '⊟'}
+            </span>
             {t('toolbar.turns')}
           </button>
           <button
@@ -104,7 +105,9 @@ export function TrajectoryToolbar({
             title={allAssistantsCollapsed ? t('toolbar.expandCalls') : t('toolbar.collapseCalls')}
             onClick={onToggleAllAssistants}
           >
-            <CodePilotIcon name={allAssistantsCollapsed ? 'expand' : 'collapse'} size={13} className={css.actionIcon} />
+            <span className={css.actionIcon} aria-hidden="true">
+              {allAssistantsCollapsed ? '⊞' : '⊟'}
+            </span>
             {t('toolbar.calls')}
           </button>
         </div>
@@ -119,9 +122,6 @@ export function TrajectoryToolbar({
             onChange={(event) => { onSearchQueryChange(event.currentTarget.value) }}
           />
         </div>
-        {utilities !== null && utilities !== undefined && (
-          <div className={css.utilities}>{utilities}</div>
-        )}
       </div>
     </div>
   )

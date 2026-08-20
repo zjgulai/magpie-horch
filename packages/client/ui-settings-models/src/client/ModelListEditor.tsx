@@ -44,14 +44,6 @@ function numberOf(model: ModelDraft, key: string): number | undefined {
   return typeof value === 'number' ? value : undefined
 }
 
-/** Explicit image-input override for one model, or inherit when absent. */
-export function modalityOf(model: ModelDraft): 'inherit' | 'text' | 'image' {
-  const input = model['input']
-  if (!Array.isArray(input) || input.length === 0) return 'inherit'
-  if (input.includes('image')) return 'image'
-  return input.includes('text') ? 'text' : 'inherit'
-}
-
 /** What an interrogation needs, taken from the live form. */
 export interface ProbeTarget {
   /** Settings namespace whose adapter family answers. */
@@ -218,7 +210,7 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
     })
   }
 
-  const patch = (index: number, next: Record<string, unknown>): void => {
+  const patch = (index: number, next: Record<string, string | number | undefined>): void => {
     onChange(models.map((model, at) => {
       if (at !== index) return model
       // Rebuilt rather than spread over: an emptied optional field has to leave
@@ -331,7 +323,6 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
             <button
               type="button"
               className={styles['linkButton']}
-              data-pilot-settings-button
               disabled={disabled}
               onClick={props.onReset}
             >
@@ -342,7 +333,6 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
         <button
           type="button"
           className={styles['linkButton']}
-          data-pilot-settings-button
           disabled={disabled || busy || !askable || props.probeBlocked !== undefined}
           title={props.probeBlocked !== undefined
             ? t(props.probeBlocked)
@@ -439,27 +429,6 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
                     onChange={(event) => { editCapacity(index, 'maxTokens', event.target.value) }}
                   />
                 </label>
-                <label className={styles['modelField']}>
-                  <span className={styles['modelFieldLabel']}>{t('modelInput')}</span>
-                  <select
-                    className={`${styles['input']} ${styles['selectInput']}`}
-                    value={modalityOf(model)}
-                    aria-label={`${t('modelInput')} ${index + 1}`}
-                    disabled={disabled}
-                    onChange={(event) => {
-                      const value = event.target.value
-                      patch(index, {
-                        input: value === 'inherit'
-                          ? undefined
-                          : value === 'image' ? ['text', 'image'] : ['text'],
-                      })
-                    }}
-                  >
-                    <option value="inherit">{t('modelInputInherited')}</option>
-                    <option value="text">{t('modelInputText')}</option>
-                    <option value="image">{t('modelInputImage')}</option>
-                  </select>
-                </label>
               </div>
             )
             : null}
@@ -468,7 +437,6 @@ export function ModelListEditor(props: ModelListEditorProps): ReactNode {
       <button
         type="button"
         className={styles['addModelButton']}
-        data-pilot-settings-button
         disabled={disabled}
         onClick={() => { onChange([...models, { id: '' }]) }}
       >

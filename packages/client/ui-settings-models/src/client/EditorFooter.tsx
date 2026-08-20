@@ -49,7 +49,6 @@ export function EditorFooter(props: EditorFooterProps): ReactNode {
       <button
         type="button"
         className={styles['secondaryButton']}
-        data-pilot-settings-button
         disabled={props.busy}
         onClick={props.onCancel}
       >
@@ -58,7 +57,6 @@ export function EditorFooter(props: EditorFooterProps): ReactNode {
       <button
         type="button"
         className={styles['primaryButton']}
-        data-pilot-settings-button
         disabled={props.submitDisabled}
         onClick={props.onSubmit}
       >

@@ -17,13 +17,14 @@ Host 下载端点会在 `readRaw` 前 flush 活动的根 Session，因此斜杠�
 
 弹窗报告准备中、开始下载或失败。关闭弹窗不会取消正在进行的下载；该操作随后完成时也不会重新打开弹窗。每个 Session 同时只允许一项下载，重复操作会共用该任务。
 
-## 安装
+## 组合
 
-```sh
-dsh plugin --profile web add https://github.com/op7418/pilot-harness/releases/latest/download/deepseek-ai-dsh-session-log-export-0.1.0-rc.5.tgz
+```yaml
+- id: session-log-download
+  name: '@deepseek-ai/dsh-session-log-export'
 ```
 
-重启 Web profile，再用 `dsh --profile web --dump-config` 确认 `session-log-download`。执行 `dsh plugin --profile web remove @deepseek-ai/dsh-session-log-export` 即可移除。Web bundle 将本包与 `dsh-host-apiproxy`、`dsh-commands`、`dsh-client-ui-commands` 和 `dsh-client-ui-trajectory` 一起挂载。本包把单 Session 导出按钮和弹窗贡献到 `conversation.trajectory.toolbar`，让会话页头只负责导航和会话标识。
+Web bundle 将本包与 `dsh-host-apiproxy`、`dsh-commands`、`dsh-client-ui-commands` 和 `dsh-client-ui-conversation` 一起挂载。本包把按钮和弹窗贡献到最右侧的 `conversation.session.header.utilities` 列表，与标题旁 `conversation.session.header.actions` 中的模式、Subagent 和 Task 配置项相互独立；Trajectory 不包含导出入口。
 
 ## 模型体验
 

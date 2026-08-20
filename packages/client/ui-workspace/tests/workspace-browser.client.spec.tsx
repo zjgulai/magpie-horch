@@ -709,11 +709,7 @@ describe('WorkspaceBrowser', () => {
       // No wide chrome in rail state.
       expect(screen.queryByText('工作区')).toBeNull()
       expect(screen.queryByPlaceholderText('搜索会话…')).toBeNull()
-      const railSearch = screen.getByRole('button', { name: '搜索会话' })
-      expect(railSearch.hasAttribute('data-pilot-workspaces-search-button')).toBe(true)
-      expect(railSearch.closest('[data-pilot-workspaces-search]')?.getAttribute('data-pilot-workspaces-search')).toBe('collapsed')
-      expect(screen.getByRole('button', { name: '添加工作区' }).hasAttribute('data-pilot-workspaces-add-button')).toBe(true)
-      fireEvent.click(railSearch)
+      fireEvent.click(screen.getByRole('button', { name: '搜索会话' }))
       expect(expandSidebar).toHaveBeenCalledTimes(1)
       // The wide flip mounts the input and focuses it after the slide.
       rerender(b, { wide: true })

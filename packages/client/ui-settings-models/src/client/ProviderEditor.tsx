@@ -30,7 +30,6 @@ import {
 import { apiKeyFailure } from './apiKey.ts'
 import { EditorFooter } from './EditorFooter.tsx'
 import { ModelListEditor } from './ModelListEditor.tsx'
-import { ProviderBrandIcon } from './ProviderBrandIcon.tsx'
 import { deriveKeyRef, messageOf, protocolChoices } from './store.ts'
 import type { SettingsSchemaOperations } from './schema-operations.ts'
 import type { en } from './locales.ts'
@@ -480,27 +479,15 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
   }
 
   return (
-    <div
-      className={props.credentialOnly === true ? styles['addBlock'] : styles['editor']}
-      data-pilot-provider-editor
-    >
+    <div className={props.credentialOnly === true ? styles['addBlock'] : styles['editor']}>
       {props.hideTitle === true
         ? null
         : (
           <div className={styles['editorHeader']}>
-            <span className={styles['editorBrand']}>
-              <ProviderBrandIcon
-                provider={props.provider}
-                displayName={props.displayName}
-                size={18}
-              />
-            </span>
-            <span className={styles['editorIdentity']}>
-              <span className={styles['editorTitle']}>{props.displayName}</span>
-              {props.provider !== props.displayName
-                ? <span className={styles['editorRoute']}>{props.provider}</span>
-                : null}
-            </span>
+            <span className={styles['editorTitle']}>{props.displayName}</span>
+            {props.provider !== props.displayName
+              ? <span className={styles['editorRoute']}>{props.provider}</span>
+              : null}
           </div>
         )}
       {layout === 'unknown'

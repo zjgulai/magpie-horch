@@ -238,7 +238,7 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
           {selected && <IconCheckOutline16 className={css.check} />}
         </button>
         {subOpen && entry.submenu !== undefined && (
-          <div className={clsx(css.submenu, compact && css.compactList)} role="menu" data-pilot-menu>
+          <div className={clsx(css.submenu, compact && css.compactList)} role="menu">
             {entry.submenu.map(sub => (
               <button
                 key={sub.id}
@@ -266,7 +266,6 @@ export function Menu({ open, anchor, items, selectedId, selectedIds, onSelect, o
     <div
       ref={listRef}
       className={clsx(css.list, dense && css.denseList, compact && css.compactList, scrollable && css.scrollable, portal && css.portal, side === 'top' && !portal && css.sideTop, align === 'end' && !portal && css.alignEnd)}
-      data-pilot-menu
       style={portal ? fixedPos ?? MEASURE_STYLE : undefined}
       role="menu"
       // React portals bubble synthetic events through the REACT tree: without

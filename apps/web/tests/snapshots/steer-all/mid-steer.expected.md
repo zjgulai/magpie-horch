@@ -3,6 +3,9 @@
     - button "Use the ask_user_question tool to" [disabled]
   - img
   - text: Standard mode
+  - button "Session log":
+    - text: Session log
+    - img
   - tablist:
     - tab "Chat" [selected]
     - tab "Trajectory"
@@ -15,6 +18,7 @@
   - text: Context injection @deepseek-ai/dsh-system-prompt
 - button "Think The user wants me to ask them a checkpoint question first, then continue with whatever they interject. Let me do exactly that.":
   - img
+  - img
   - text: Think The user wants me to ask them a checkpoint question first, then continue with whatever they interject. Let me do exactly that.
 - status: Deep diving...
 - text: "Interjection: include the word BANANA in your final reply."
@@ -24,10 +28,10 @@
 - button "Copy":
   - img
 - textbox "Message the agent"
-- button "Commands"
+- button "Commands":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "Context details"
 - button "Stop generating"

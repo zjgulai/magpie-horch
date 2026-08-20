@@ -16,7 +16,7 @@
   padding: 0 10px 0 8px;
   box-sizing: border-box;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   cursor: pointer;
   overflow: hidden;
@@ -38,7 +38,7 @@
   justify-content: center;
   gap: 0;
   padding: 0;
-  border-radius: 8px;
+  border-radius: 50%;
 }
 
 .triggerLabel {
@@ -77,7 +77,7 @@
   width: 800px;
   height: min(800px, calc(100vh - 48px));
   max-width: calc(100vw - 48px);
-  border-radius: 14px;
+  border-radius: 24px;
   overflow: hidden;
   background: var(--dsw-alias-bg-layer-2);
   box-shadow: var(--dsw-shadow-lv3);
@@ -111,28 +111,6 @@
   color: var(--dsw-alias-label-primary);
 }
 
-/* Desktop-safe back action: it sits in the navigation flow above General,
-   below the native titlebar/traffic lights, instead of competing with them. */
-.back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.back:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-primary);
-}
-
 /* Cell stack (figma 501:29961): gap 4. */
 .navList {
   display: flex;
@@ -150,7 +128,7 @@
   padding: 9px 16px 9px 12px;
   box-sizing: border-box;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
@@ -219,7 +197,7 @@
   height: 28px;
   padding: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: 28px;
   background: transparent;
   cursor: pointer;
   color: var(--dsw-alias-label-primary);
@@ -228,9 +206,6 @@
 .close:hover {
   background: var(--dsw-alias-interactive-bg-hover);
 }
-
-.backGlyph { display: block; }
-.closeGlyph { display: block; }
 
 /* Options area (figma Options 501:29983): pad (24,0,24,24), scrolls. */
 .options {

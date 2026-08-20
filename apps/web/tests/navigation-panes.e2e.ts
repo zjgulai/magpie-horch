@@ -267,12 +267,7 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
       heading: getComputedStyle(heading).backgroundColor,
       panel: getComputedStyle(heading.closest('[aria-label="Event details"]')!).backgroundColor,
     }))
-    // Pilot uses a nested card surface for the section heading over the
-    // details rail instead of an additional border. Both must remain opaque
-    // and distinct in dark mode so the hierarchy is carried by color blocks.
-    expect(darkSummarySurfaces.heading).not.toBe('rgba(0, 0, 0, 0)')
-    expect(darkSummarySurfaces.panel).not.toBe('rgba(0, 0, 0, 0)')
-    expect(darkSummarySurfaces.heading).not.toBe(darkSummarySurfaces.panel)
+    expect(darkSummarySurfaces.heading).toBe(darkSummarySurfaces.panel)
     await page.evaluate(() => { document.body.removeAttribute('data-ds-dark-theme') })
     await page.getByRole('tab', { name: 'Result' }).click()
     await expect.poll(() => page.getByText('NAVIGATION_OK', { exact: false }).count(), { timeout: 10_000 }).toBeGreaterThanOrEqual(1)
@@ -293,14 +288,19 @@ describe('web e2e: navigation & panes over a rich seeded session', () => {
     await details.getByRole('button', { name: 'Close details' }).click()
   }, 60_000)
 
-  it.skipIf(MODE === 'record')('downloads through the Trajectory toolbar and /export with one dialog', async () => {
+  it.skipIf(MODE === 'record')('downloads through the Session Header and /export with one dialog', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-navigation-export'))
     await ensureSeedOpen(page)
-    await page.getByRole('tab', { name: 'Trajectory' }).click()
-    const exportButton = page.getByRole('button', { name: 'Export log' })
+    const exportButton = page.getByRole('button', { name: 'Session log' })
     expect(await exportButton.isDisabled()).toBe(false)
-    await expect.poll(() => exportButton.locator('xpath=ancestor::*[@role="toolbar"][1]').count())
-      .toBe(1)
+    const header = exportButton.locator('xpath=ancestor::header[1]')
+    const [buttonBox, headerBox] = await Promise.all([
+      exportButton.boundingBox(), header.boundingBox(),
+    ])
+    if (buttonBox === null || headerBox === null) {
+      throw new Error('Session Header export geometry is unavailable')
+    }
+    expect(headerBox.x + headerBox.width - (buttonBox.x + buttonBox.width)).toBeLessThanOrEqual(32)
     const responsePromise = page.waitForResponse(response =>
       response.request().method() === 'HEAD'
       && new URL(response.url()).pathname === '/api/session.export', { timeout: 30_000 })

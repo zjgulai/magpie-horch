@@ -31,9 +31,9 @@ import { createChatStore } from '@deepseek-ai/dsh-client-ui-conversation/src/cli
 import { zh as conversationZh } from '@deepseek-ai/dsh-client-ui-conversation/src/client/locales.ts'
 import { apply as localeApply, inject as localeInject } from '@deepseek-ai/dsh-client-locale/client'
 import { stubSettingsScope } from '@deepseek-ai/dsh-client-test-runtime'
-import type { LocaleKeysOf, PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
+import type { LocaleKeysOf } from '@deepseek-ai/dsh-client-ui-slots'
 import { zh, type TrajectoryKey } from '../src/client/locales.ts'
-import { apply, inject } from '../src/client/index.ts'
+import { apply, inject } from '@deepseek-ai/dsh-client-ui-trajectory/client'
 import { apply as nodeApply } from '@deepseek-ai/dsh-client-ui-trajectory'
 import type { TrajectoryTurnModel } from '../src/client/layout.ts'
 import { TrajectoryTimeline } from '../src/client/TrajectoryTimeline.tsx'
@@ -159,21 +159,16 @@ function emptyWorkspaces() {
 /** Standalone view props: the session-scope standard kit the outlet would bake. */
 function standaloneProps(
   nodes: ConversationSnapshot['nodes'],
-): ConvViewProps
-  & PropsRenderSlots<'conversation.trajectory.toolbar'>
-  & { t: (key: LocaleKeysOf<'trajectory'>) => string } {
+): ConvViewProps & { t: (key: LocaleKeysOf<'trajectory'>) => string } {
   return {
     sessionId: SID,
     useSession: fakeSession(nodes).useSession,
     useSessions: emptySessions(),
     useWorkspaces: emptyWorkspaces(),
     useProjection: (() => undefined) as never,
-    renderSlot: () => null,
     // The locale seat the outlet would inject for the declared namespace.
     t: (key: LocaleKeysOf<'trajectory'>) => zh[key as TrajectoryKey] ?? key,
-  } as unknown as ConvViewProps
-    & PropsRenderSlots<'conversation.trajectory.toolbar'>
-    & { t: (key: LocaleKeysOf<'trajectory'>) => string }
+  } as unknown as ConvViewProps & { t: (key: LocaleKeysOf<'trajectory'>) => string }
 }
 
 /** Real-stack bench: root Context + real SlotRegistry ring + the plugin fiber. */

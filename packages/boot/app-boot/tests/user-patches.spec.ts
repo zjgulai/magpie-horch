@@ -371,23 +371,6 @@ describe('boot with user patches', () => {
     }
   })
 
-  it('keeps exact config watching available when Loader internals are unavailable', { timeout: 20_000 }, async () => {
-    const dir = tmp()
-    const filename = join(tmp(), PROFILE_PATCH_FILENAME)
-    const ctx = await boot(NAME, writeTree(dir), [{ id: 'noop', config: { value: 'base' } }])
-    ctx.loader.internal = undefined
-    await ctx.plugin(Timer)
-    await ctx.plugin(Hmr, { root: [], ignored: [], debounce: 0 })
-    const dispose = await watchUserPatches(ctx, { binName: NAME, filename })
-    try {
-      writeFileSync(filename, '- id: noop\n  config:\n    value: portable\n')
-      await eventually(() => (entryConfig(ctx, 'noop') as { value?: string }).value === 'portable', 'portable config watcher did not apply the patch')
-    } finally {
-      await dispose()
-      await ctx.fiber.dispose()
-    }
-  })
-
   it('fails loud when the exact watcher lacks HMR or a root Include', async () => {
     const dir = tmp()
     const withoutHmr = await boot(NAME, writeTree(dir))

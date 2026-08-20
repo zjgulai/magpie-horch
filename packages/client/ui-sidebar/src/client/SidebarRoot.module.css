@@ -22,8 +22,8 @@
   --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
 }
 
-/* Rail geometry (CodePilot NavRail): 36x36 control boxes centered in the 56px
-   rail (10px side padding), 4px vertical rhythm, 18px from the rail top to
+/* Rail geometry (figma rail spec): 36x36 control boxes centered in the 56px
+   rail (10px side padding), 12px vertical rhythm, 18px from the rail top to
    the whale's box (24px to the 24-wide whale glyph itself). */
 .root.collapsed {
   padding: 18px 10px 6px;
@@ -256,7 +256,7 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  margin: 0 0 4px;
+  margin: 0 0 12px;
   gap: 0;
   border-color: transparent;
   background: transparent;

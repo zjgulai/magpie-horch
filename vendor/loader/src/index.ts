@@ -72,9 +72,6 @@ export class Loader extends EntryTree {
   public name = 'loader'
   public internal = ModuleLoader.fromInternal()
 
-  /** Optional host-owned import fallback used when Node's private ESM loader is unavailable. */
-  public fallbackImport?: (specifier: string, parentURL: string) => Promise<any>
-
   public builtins: Dict<any> = Object.create(null)
 
   constructor(ctx: Context, public config: Loader.Config = {}) {

@@ -3,11 +3,19 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib/types",
-    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo",
+    "composite": true
   },
-  "files": ["src/client/index.ts", "src/client/css-modules.d.ts"],
+  "files": [
+    "src/client/index.ts",
+    "src/client/css-modules.d.ts"
+  ],
   "references": [
-    { "path": "../../../vendor/cordis" },
-    { "path": "../runtime" }
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../runtime"
+    }
   ]
 }

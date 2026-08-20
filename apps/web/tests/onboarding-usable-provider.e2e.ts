@@ -14,11 +14,13 @@ import {
   acknowledgeReloadConnectionLoss, assertFixtureInventory, captureStableAria, compareOrRefreshGolden,
   launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
-import { ZH_BROWSER_LOCALE, connectFreshWorkspaceZh, saveFailureShot } from './support.ts'
+import { ZH_BROWSER_LOCALE, saveFailureShot } from './support.ts'
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('./snapshots/onboarding-usable-provider', import.meta.url))
 const DISMISSED_EXPECTED = join(SNAPSHOT_DIR, 'dismissed.expected.md')
 const MODE = webSnapshotMode()
+const CREDENTIAL_STEP = '添加一个 API Key 开始使用'
+
 describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-run onboarding', () => {
   let scaffold: WebScaffold
   let browser: Browser
@@ -42,28 +44,26 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
 
   it('closes the setup card without discarding the add card beside it', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-setup-card-cancel'))
-    // Onboarding waits until the user has selected a project; the project
-    // picker must remain the first interaction on a cold desktop.
-    await connectFreshWorkspaceZh(page, scaffold.workspaceCwd, 'onboarding-provider')
-    // Provider-neutral onboarding never forces the official DeepSeek key.
-    expect(await page.getByRole('dialog', { name: '添加一个 API Key 开始使用' }).count()).toBe(0)
+    const credentialStep = page.getByRole('dialog', { name: CREDENTIAL_STEP })
+    await credentialStep.waitFor({ timeout: 15_000 })
+    await credentialStep.getByRole('button', { name: '稍后配置' }).click()
+    await credentialStep.waitFor({ state: 'detached', timeout: 15_000 })
 
     await page.getByRole('button', { name: '设置', exact: true }).click()
     const settings = page.getByRole('dialog', { name: '设置' })
     await settings.waitFor({ timeout: 10_000 })
     // The onboarding step no longer navigates into Settings on dismissal, so
-    // enter the Providers section explicitly before exercising its normal cards.
-    await settings.getByRole('button', { name: '服务商' }).click()
+    // enter the Models section explicitly before exercising its normal cards.
+    await settings.getByRole('button', { name: '模型' }).click()
     const setupKey = settings.getByRole('textbox', { name: 'API 密钥', exact: true })
     await setupKey.waitFor({ timeout: 10_000 })
 
-    const add = settings.getByRole('button', { name: '添加服务商' })
+    const add = settings.getByRole('button', { name: '添加提供方' })
     await expect.poll(async () => add.isEnabled(), { timeout: 10_000 }).toBe(true)
     await add.click()
-    const search = settings.getByRole('searchbox', { name: '搜索服务商' })
-    await search.waitFor({ timeout: 10_000 })
-    await search.fill('minimax-cn')
-    await settings.getByRole('button', { name: /minimax-cn/i }).click()
+    const pick = settings.getByLabel('提供方')
+    await pick.waitFor({ timeout: 10_000 })
+    await pick.selectOption('minimax-cn')
     await expect.poll(
       async () => settings.getByRole('textbox', { name: 'API 密钥', exact: true }).count(),
       { timeout: 10_000 },
@@ -72,7 +72,7 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     // Cancelling the setup card must not close the independent add-provider
     // draft beside it.
     await settings.getByRole('button', { name: '取消', exact: true }).first().click()
-    expect(await settings.getByRole('button', { name: '更换' }).count()).toBe(1)
+    expect(await settings.getByLabel('提供方').count()).toBe(1)
     await expect.poll(
       async () => settings.getByRole('textbox', { name: 'API 密钥', exact: true }).count(),
       { timeout: 10_000 },
@@ -106,7 +106,7 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     // The regression: the step read only the official route's credential, so a
     // fully configured user was taken over on every blank session.
     await expect.poll(
-      async () => page.getByRole('dialog', { name: '添加一个 API Key 开始使用' }).count(),
+      async () => page.getByRole('dialog', { name: CREDENTIAL_STEP }).count(),
       { timeout: 10_000 },
     ).toBe(0)
     expect(await page.locator('#root').evaluate(root => (root as HTMLElement).inert)).toBe(false)
@@ -115,7 +115,7 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     // setup card over a user who already has somewhere to send a request.
     await page.getByRole('button', { name: '设置', exact: true }).click()
     await settings.waitFor({ timeout: 10_000 })
-    await settings.getByRole('button', { name: '服务商' }).click()
+    await settings.getByRole('button', { name: '模型' }).click()
     await settings.getByRole('button', { name: '编辑 DeepSeek (deepseek-official)' }).waitFor({ timeout: 10_000 })
     expect(await settings.getByRole('textbox', { name: 'API 密钥', exact: true }).count()).toBe(0)
 

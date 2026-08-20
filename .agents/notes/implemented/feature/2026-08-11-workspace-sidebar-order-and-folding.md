@@ -30,10 +30,6 @@ Workspace hit testing uses the complete rendered group section, including visibl
 
 Search is a header action while collapsed and expands across the title and trailing actions. An outside click collapses a query that is empty after trimming but retains a non-empty query; while the rail search gesture is still in flight the outside-click listener stays unmounted ([rail-search self-dismissal](../bug-fix/2026-08-18-rail-search-outside-click-self-dismissal.md)). Compact Workspace and Session rows, a 24px bottom fade, and the absence of per-Workspace Session counts preserve vertical space without removing navigation affordances.
 
-### Progressive Session summaries
-
-Session rows keep the title, relative time, and primary pending, running, or completion state inline. Their delayed hover card carries full title, Workspace, directory, Agent preset, relative time, and all current statuses. The Workspace browser declares the root-scoped list child slot `sidebar.workspaces.session.detail`; optional domain plugins contribute branch, consumed model route, and active-reminder rows. Owner props contain only Session facts plus serializable CSS class and icon-name values, so the Workspace package retains its visual tokens without importing those domains or passing React content through owner props. Model metadata arrives through the Session-list projection and never activates cold history; Worktree and Schedule own read-only Host queries that exist only while the hover card is mounted.
-
 ## Alternatives considered
 
 **Write every activity promotion into `Workspace.sessionIds`.** A browser presentation preference would overwrite the shared Host account whenever a user submits a prompt.
@@ -48,18 +44,13 @@ Session rows keep the title, relative time, and primary pending, running, or com
 
 **Let the browser reject an outside release.** The application would commit the last valid marker while the browser displays a rejected-drop animation, presenting contradictory feedback.
 
-**Render every Session fact in a taller list card.** Branch, model, reminder, path, and status would make common scanning slower and reduce the number of visible conversations. Delayed hover preserves the compact list while keeping the richer context one gesture away.
-
-**Fetch optional domain data in the Workspace package.** This would make the navigation package depend on Git, model routing, and Schedule storage. A child slot keeps each read and lifecycle in the plugin that owns the fact.
-
 ## Consequences
 
 - Workspace order is durable and shared through the Host, while grouping, open state, per-account Session view order, and query state remain browser-local presentation preferences. Ungrouped and the flat list support the same drag and promotion rules, but their orders are browser-local because neither has one Workspace account.
 - Last updated performs a complete recency sort on entry, then preserves manual adjustments until a user prompt or steer advances one Session and moves it to the front. Returning to Manual preserves every current position.
 - Opening a Workspace never shows more than five Sessions without an explicit **Show more** gesture, and closing it resets only that transient gesture.
 - The Host Session account retains the manual-order meaning established by [Session List Browsing and Manual Workspace Order](2026-07-25-session-list-browsing-and-manual-order.md).
-- Disabling Worktree, model selection, or Schedule summary removes only that plugin's hover row; the compact Session list and the remaining details continue to work.
 
 ## Testing
 
-Domain and Host tests cover durable Workspace moves, no-op and invalid anchors, restart recovery, full-order RPC responses, order frames, and one Workspace snapshot per Host-stream baseline. Runtime tests cover optimistic order, frame/response precedence, overlapping rejection rollback to Host-confirmed order, reconnect baselines, and New Session target priority. UI tests cover five-row folding, transient expansion reset, pruning persisted state after Workspace removal, order-preserving mode switches, one-time recent-update promotion, browser-local Ungrouped and flat-list drag persistence, hierarchy-free flat-row leading spacing, selected view indicators, expanded-section Workspace hit testing, an unclipped first insertion boundary, outside-list Workspace and Session drops, search collapse rules, compact CSS dimensions, delayed detail mounting, and the plain owner data passed to child detail plugins.
+Domain and Host tests cover durable Workspace moves, no-op and invalid anchors, restart recovery, full-order RPC responses, order frames, and one Workspace snapshot per Host-stream baseline. Runtime tests cover optimistic order, frame/response precedence, overlapping rejection rollback to Host-confirmed order, reconnect baselines, and New Session target priority. UI tests cover five-row folding, transient expansion reset, pruning persisted state after Workspace removal, order-preserving mode switches, one-time recent-update promotion, browser-local Ungrouped and flat-list drag persistence, hierarchy-free flat-row leading spacing, selected view indicators, expanded-section Workspace hit testing, an unclipped first insertion boundary, outside-list Workspace and Session drops, search collapse rules, and compact CSS dimensions.

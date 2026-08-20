@@ -106,19 +106,15 @@ describe('web e2e: whole-session stats survive history paging', () => {
     // turns are NOT loaded, yet the strip already reports the whole log —
     // the sessionStats projection, not the window fold.
     expect(await page.getByText('m1', { exact: true }).count()).toBe(0)
-    const context = page.getByRole('button', { name: 'Context details' })
-    await context.click()
     await expect.poll(() => page.getByText(FULL_COUNTS, { exact: false }).count(), { timeout: 10_000 }).toBe(1)
-    const stripBeforePaging = await page.getByText(FULL_COUNTS, { exact: false }).locator('..').textContent()
+    const strip = page.getByText(FULL_COUNTS, { exact: false }).locator('..')
+    const stripBeforePaging = await strip.textContent()
 
     // 加载更早: prepending the older page must not move ANY strip figure —
     // counts, wall times, or token groups.
     await page.getByRole('button', { name: 'Load earlier' }).click()
     await expect.poll(() => page.getByText('m1', { exact: true }).count(), { timeout: 10_000 }).toBe(1)
-    await context.click()
-    const stripAfterPaging = page.getByText(FULL_COUNTS, { exact: false }).locator('..')
-    await stripAfterPaging.waitFor({ timeout: 10_000 })
-    expect(await stripAfterPaging.textContent()).toBe(stripBeforePaging)
+    expect(await strip.textContent()).toBe(stripBeforePaging)
     // With the whole log loaded, the window mounts one turn-tail footer per
     // settled turn — the loaded-window probe the scroll/perf lanes count now
     // that the strip is whole-log-scoped.
@@ -127,13 +123,6 @@ describe('web e2e: whole-session stats survive history paging', () => {
 
   it('matches the paged-stats aria golden', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-stats-paged-aria'))
-    // The preceding context-button click leaves the pointer over its tooltip
-    // trigger. Move it away and wait for dismissal so capture timing cannot
-    // decide whether the transient tooltip enters the accessibility tree.
-    await page.mouse.move(0, 0)
-    await expect.poll(() => page.getByRole('tooltip', { name: 'Context details' }).count(), {
-      timeout: 5_000,
-    }).toBe(0)
     const snapshot = (await captureStableAria(page, '[class*="centerCol"]', scaffold.workspaceCwd))
       .split(SEED_ID).join('{{seededId}}')
     await compareOrRefreshGolden(UI_EXPECTED, snapshot, MODE)

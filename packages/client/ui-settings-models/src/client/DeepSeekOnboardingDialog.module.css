@@ -5,16 +5,12 @@
   color: var(--dsw-alias-label-secondary);
 }
 
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+.editor {
   margin-top: 24px;
 }
 
 @media (max-width: 560px) {
-  .actions {
-    flex-direction: column-reverse;
+  .editor {
     margin-top: 20px;
   }
 }

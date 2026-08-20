@@ -3,24 +3,17 @@
 // is intentionally dropped). Native 23.16x17.04, rendered 24x18 by default;
 // hero usage scales to 34x25. Color rides currentColor (wordmark ink).
 
-import type { SVGProps } from 'react'
 import type { IconProps } from './icons/props.ts'
-
-/** Fish mark props plus native SVG data/ARIA/event attributes. */
-export type FishLogoProps = IconProps & Omit<SVGProps<SVGSVGElement>, 'className' | 'height' | 'width'>
 
 /**
  * Render the fish logo.
  * @param props.size - width in px (default 24; height keeps the 23.16:17.04 ratio).
  * @param props.className - extra class for layout placement.
- * @param props - remaining native SVG attributes, including data attributes
- * used by theme plugins to replace the original mark.
  * @returns the logo svg (aria-hidden; pair with the wordmark for accessibility).
  */
-export function FishLogo({ size = 24, className, ...svgProps }: FishLogoProps) {
+export function FishLogo({ size = 24, className }: IconProps) {
   return (
     <svg
-      {...svgProps}
       width={size}
       height={(size * 17.04) / 23.16}
       className={className}

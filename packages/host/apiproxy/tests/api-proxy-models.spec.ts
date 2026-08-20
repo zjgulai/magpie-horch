@@ -51,12 +51,10 @@ class CatalogAdapter extends LlmAdapter {
 
   override resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
     if (this.exactError !== undefined) return Promise.reject(this.exactError)
-    const listed = this.models instanceof Error ? undefined : this.models.find(entry => entry.id === model)
     return Promise.resolve({
       provider,
       id: model,
       name: model,
-      ...listed?.inputModalities === undefined ? {} : { inputModalities: listed.inputModalities },
       ...this.reasoning === undefined ? {} : { reasoning: this.reasoning },
     })
   }
@@ -317,27 +315,6 @@ describe('Web session model selection', () => {
     await ctx.fiber.dispose()
   })
 
-  it('projects adapter-declared input modalities into the host model catalog', async () => {
-    const { ctx } = await harness()
-    ctx.llm.registerAdapter(['vision'], new CatalogAdapter('Vision', [{
-      provider: 'vision',
-      id: 'vision-large',
-      name: 'Vision Large',
-      inputModalities: ['text', 'image'],
-    }]))
-    const api = createApiProxy(ctx, {
-      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
-      cwd: '/tmp',
-    })
-    const catalog = expectValue(await api.llm.models(request({})))
-    expect(catalog.groups.find(group => group.id === 'vision')?.models).toEqual([{
-      id: 'vision-large',
-      name: 'Vision Large',
-      inputModalities: ['text', 'image'],
-    }])
-    await ctx.fiber.dispose()
-  })
-
   it('accepts an advisory-unlisted model, rejects an unavailable provider, and switches only after the next assembly', async () => {
     const { ctx, agent, sessionId } = await harness()
     const api = createApiProxy(ctx, { defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }), cwd: '/tmp' })
@@ -480,12 +457,10 @@ describe('Web session model selection', () => {
     await ctx.fiber.dispose()
   })
 
-  it('refuses a direct prompt before discovery, then repairs a blank session to the first available route', async () => {
+  it('refuses a prompt no adapter can route, and reports it on the directory', async () => {
     const { ctx, sessionId } = await harness()
-    const saveDefaultModelSelection = vi.fn(() => Promise.resolve())
     const api = createApiProxy(ctx, {
       defaultModelSelection: () => ({ provider: 'deleted-gateway', model: 'deleted-model' }),
-      saveDefaultModelSelection,
       cwd: '/tmp',
     })
 
@@ -498,14 +473,7 @@ describe('Web session model selection', () => {
       ok: false,
       error: { code: 'model-unavailable', details: { provider: 'deleted-gateway', model: 'deleted-model' } },
     })
-    const repaired = expectValue(await api.sessions.models(request({ sessionId })))
-    expect(repaired).toMatchObject({
-      current: { provider: 'deepseek-official', model: 'deepseek-chat', reasoningEffort: 'high' },
-      routable: true,
-    })
-    expect(saveDefaultModelSelection).toHaveBeenCalledWith({
-      provider: 'deepseek-official', model: 'deepseek-chat', reasoningEffort: 'high',
-    })
+    expect(expectValue(await api.sessions.models(request({ sessionId }))).routable).toBe(false)
 
     // An advisory-unlisted model on a live route is NOT this: the route
     // serves it, so the prompt goes through and nothing blocks.
@@ -519,19 +487,22 @@ describe('Web session model selection', () => {
     await ctx.fiber.dispose()
   })
 
-  it('never repairs a logged session when its recorded route is gone', async () => {
-    const { ctx, sessionId } = await harness({ provider: 'deleted-gateway', model: 'deleted-model' })
-    const saveDefaultModelSelection = vi.fn(() => Promise.resolve())
+  it('serves a session and its catalog when the stored default names a route that is gone', async () => {
+    const { ctx, sessionId } = await harness()
     const api = createApiProxy(ctx, {
-      defaultModelSelection: () => ({ provider: 'deepseek-official', model: 'deepseek-chat' }),
-      saveDefaultModelSelection,
+      // What a Models-page removal leaves behind: the settings document still
+      // names the route the user last picked, and nothing serves it.
+      defaultModelSelection: () => ({ provider: 'deleted-gateway', model: 'deleted-model' }),
       cwd: '/tmp',
     })
 
     const catalog = expectValue(await api.sessions.models(request({ sessionId })))
+    // Passed through rather than repaired: matching no group is precisely what
+    // makes the composer seat prompt for a selection instead of naming a model
+    // the deployment cannot reach.
     expect(catalog.current).toEqual({ provider: 'deleted-gateway', model: 'deleted-model' })
-    expect(catalog.routable).toBe(false)
-    expect(saveDefaultModelSelection).not.toHaveBeenCalled()
+    expect(catalog.groups.flatMap(group => group.models.map(model => `${group.id}/${model.id}`)))
+      .not.toContain('deleted-gateway/deleted-model')
     await ctx.fiber.dispose()
   })
 })

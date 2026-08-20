@@ -57,7 +57,6 @@ export function Modal({
       <div className={css.mask} aria-hidden="true" onClick={onClose} />
       <div
         className={clsx(css.dialog, className)}
-        data-pilot-dialog
         role="dialog"
         aria-modal="true"
         aria-label={title}

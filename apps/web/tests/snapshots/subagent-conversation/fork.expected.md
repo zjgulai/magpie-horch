@@ -1,11 +1,6 @@
 - tree "Sessions":
-  - treeitem "workspace Workspace actions for workspace New session in workspace" [expanded]:
+  - treeitem "workspace" [expanded]:
+    - img
     - text: workspace
-    - button "Workspace actions for workspace"
-    - button "New session in workspace"
-  - treeitem "Explain event sourcing in one (1) now Session actions for Explain event sourcing in one (1)" [selected]:
-    - text: Explain event sourcing in one (1) now
-    - button "Session actions for Explain event sourcing in one (1)"
-  - treeitem "Ask a research subagent to now Session actions for Ask a research subagent to":
-    - text: Ask a research subagent to now
-    - button "Session actions for Ask a research subagent to"
+  - treeitem "Explain event sourcing in one (1) now" [selected]
+  - treeitem "Ask a research subagent to now"

@@ -4,7 +4,7 @@
 }
 
 /* Dropdown card (figma MenuDropdown 122:9481 / 419:16920): menu surface,
- * shared 14px surface radius, inverted hairline border, shadow-lv3, 4px inset padding. */
+ * r12, inverted hairline border, shadow-lv3, 4px inset padding. */
 .list,
 .submenu {
   /* min-widths below are the design's outer card widths — include the pad. */
@@ -14,7 +14,7 @@
   flex-direction: column;
   gap: 0;
   border: 1px solid var(--dsw-alias-border-inverted);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--dsw-specific-menu);
   box-shadow: var(--dsw-shadow-lv3);
   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens. The
@@ -92,7 +92,7 @@
   position: relative;
 }
 
-/* Menu cell: min-h 40, shared 8px control radius, pad 10/8, 14/22 primary,
+/* Menu cell (figma .Menu_cell): min-h 40, r10, pad 10/8, 14/22 primary,
  * gap 8 between leading icon / label / trailing check. */
 .item {
   display: flex;
@@ -102,7 +102,7 @@
   min-height: 40px;
   padding: 8px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   cursor: pointer;
   font-size: 14px;
@@ -128,14 +128,14 @@
 .submenu.compactList {
   min-width: 164px;
   padding: 2px;
-  border-radius: 14px;
+  border-radius: 7px;
 }
 
 .compactList .item {
   min-height: 26px;
   gap: 6px;
   padding: 3px 7px;
-  border-radius: 8px;
+  border-radius: 5px;
   font-size: 12px;
   line-height: 18px;
 }

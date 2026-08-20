@@ -30,13 +30,6 @@ export interface SessionNode {
   /** Finished running while not selected and not yet opened (the green "done" reminder dot). */
   completed: boolean
   updatedAt: number
-  /** Workspace context repeated in hover summaries and flat rows. */
-  workspaceId?: WorkspaceId | undefined
-  workspaceTitle?: string | undefined
-  cwd?: string | undefined
-  agentPreset?: string | undefined
-  /** Open projection bag forwarded only to optional detail plugins. */
-  projections?: Readonly<Record<string, unknown>> | undefined
 }
 
 /** Session order selected by the Workspace browser. */
@@ -221,7 +214,6 @@ function groupByWorkspace(
 function sessionNode(
   s: SessionSummary,
   descendants: ReadonlyMap<SessionId, SubagentDescendantSummary>,
-  workspace: { id?: WorkspaceId | undefined; title: string; cwd?: string | undefined },
 ): SessionNode {
   return {
     id: s.id,
@@ -231,11 +223,6 @@ function sessionNode(
     runningSubagentCount: descendants.get(s.id)?.runningCount ?? 0,
     completed: s.completed === true,
     updatedAt: s.updatedAt,
-    ...(workspace.id === undefined ? {} : { workspaceId: workspace.id }),
-    workspaceTitle: workspace.title,
-    ...(workspace.cwd === undefined ? {} : { cwd: workspace.cwd }),
-    ...(s.agentPreset === undefined ? {} : { agentPreset: s.agentPreset }),
-    projections: (s.projectionValues ?? {}) as Readonly<Record<string, unknown>>,
     ...(s.pendingInteraction === undefined ? {} : { pendingInteraction: s.pendingInteraction }),
   }
 }
@@ -279,11 +266,7 @@ export function deriveGroups(
       sessionCount: g.sessions.length,
       expanded,
       containsCurrent: g.key === currentGroup,
-      sessions: expanded ? g.sessions.map(session => sessionNode(session, descendants, {
-        ...(g.workspaceId === undefined ? {} : { id: g.workspaceId }),
-        title: g.workspaceId === undefined ? workspaceLabel(session.cwd) : g.label,
-        cwd: g.cwd ?? session.cwd,
-      })) : [],
+      sessions: expanded ? g.sessions.map(session => sessionNode(session, descendants)) : [],
     })
   }
   return groups
@@ -296,13 +279,11 @@ export function deriveGroups(
  * (see {@link deriveSearchResults}).
  * @param list - sessions list snapshot.
  * @param archivedSessionIds - registry-global archive set.
- * @param workspaces - Workspace facts used to enrich each flat Session row.
  * @returns flat rows in render order.
  */
 export function deriveFlat(
   list: SessionListState,
   archivedSessionIds: readonly SessionId[],
-  workspaces: readonly WorkspaceView[] = [],
 ): SessionNode[] {
   const archived = new Set(archivedSessionIds)
   const descendants = indexSubagentDescendants(list.byId)
@@ -313,18 +294,7 @@ export function deriveFlat(
     rows.push(s)
   }
   rows.sort(byRecency)
-  const workspaceBySession = new Map<SessionId, WorkspaceView>()
-  for (const workspace of workspaces) {
-    for (const sessionId of workspace.sessionIds) {
-      if (!workspaceBySession.has(sessionId)) workspaceBySession.set(sessionId, workspace)
-    }
-  }
-  return rows.map((session) => {
-    const workspace = workspaceBySession.get(session.id)
-    return sessionNode(session, descendants, workspace === undefined
-      ? { title: workspaceLabel(session.cwd), cwd: session.cwd }
-      : { id: workspace.workspaceId, title: workspace.title, cwd: workspace.path })
-  })
+  return rows.map(session => sessionNode(session, descendants))
 }
 
 /** Relative-time bucket of a session row's trailing label. */

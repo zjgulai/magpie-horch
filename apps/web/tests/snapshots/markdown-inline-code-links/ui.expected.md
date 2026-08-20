@@ -1,6 +1,9 @@
 - banner:
   - navigation "Session hierarchy":
     - button "Inline code links" [disabled]
+  - button "Session log":
+    - text: Session log
+    - img
   - tablist:
     - tab "Chat" [selected]
     - tab "Trajectory"
@@ -34,10 +37,11 @@
   - img
 - text: {{clock}} Ran for {{duration}}
 - textbox "Message the agent"
-- button "Commands"
+- button "Commands":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "Context details"
 - button "Send message" [disabled]
+- text: 1 turns · 1 steps LLM {{duration}}

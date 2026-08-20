@@ -1,8 +1,7 @@
 /* Workspace browsing region (fills the sidebar shell's hole): section
    header, search capsule, and the scrolling session list. Wide/rail
    variants ride the shell's fold state through the `wide` owner prop —
-   rail state renders only the two 36x36 icon controls with CodePilot's 4px
-   navigation rhythm. */
+   rail state renders only the two 36x36 icon controls. */
 
 .root {
   --dsh-session-list-edge-inset: var(--dsh-sidebar-inline-padding);
@@ -246,7 +245,7 @@
 .rail .sectionHeader {
   gap: 0;
   padding-left: 0;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
   justify-content: flex-start;
 }
 
@@ -264,7 +263,7 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  margin: 0 0 4px;
+  margin: 0 0 12px;
   gap: 0;
   border-color: transparent;
   background: transparent;

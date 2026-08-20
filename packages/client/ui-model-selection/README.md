@@ -12,8 +12,6 @@ Directories are per-session, resolved lazily through `ctx.modelDirectories.direc
 
 Every resident directory refetches directly on forwarded `llm/adapters-updated` and `settings/document-updated` owner events. Provider topology, provider catalogs, and the default selection therefore converge without the Host or client runtime deriving a separate model-change alias.
 
-The plugin's Host half also registers the `sessionModel` projection, a last-wins fold of durable `request/header` snapshots. The Workspace browser's `sidebar.workspaces.session.detail` contribution reads that projection from the Session list and shows the recorded model/provider in the hover summary. Hovering a cold Session therefore never calls `session.models`, composes an Agent, or mutates selection state. A blank Session and history without a request header omit the summary row.
-
 The `/client` exports are the plugin body (`apply`/`inject`), `ModelDirectoryResolver`, `ModelDirectory` with its state fields, and the seat's injected face type.
 
 ## Model Experience
@@ -29,4 +27,3 @@ Switching the route can reduce or invalidate provider-side cache reuse for subse
 - **No create-time or addressed-subagent selection** — both entries require an existing ordinary session's Agent; there is no draft-phase model choice to fold into session creation, and subagent continuation deliberately exposes no independent model-selection contract.
 - **Directory names are presentation-only** — selection and persistence use provider/model/effort ids; a provider whose catalog or exact-model metadata lookup fails lists as an unselectable failure row until reload.
 - **No arbitrary effort input** — the composer offers only the exact model's adapter-advertised levels; an adapter without reasoning metadata leaves the Effort row absent.
-- **The sidebar summary is the last consumed route** — a selection click appears there only after a request header durably records a request that used it.

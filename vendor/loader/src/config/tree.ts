@@ -155,11 +155,6 @@ export abstract class EntryTree {
         return await this.ctx.loader.internal.import(name, this.ctx.baseUrl!, {})
       } else if (name.startsWith('.')) {
         return await import(/* @vite-ignore */new URL(name, this.ctx.baseUrl).href)
-      } else if (this.ctx.loader.fallbackImport) {
-        // Closed hosts can provide a public-runtime resolver without pulling
-        // Node-only modules into this Loader's browser build. The callback is
-        // shared by every nested EntryTree, unlike a root Include override.
-        return await this.ctx.loader.fallbackImport(name, this.ctx.baseUrl!)
       } else {
         return await import(/* @vite-ignore */name)
       }

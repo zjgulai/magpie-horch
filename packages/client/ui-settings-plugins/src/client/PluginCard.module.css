@@ -3,7 +3,7 @@
 .card {
   list-style: none;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--dsw-alias-bg-layer-3);
   transition: border-color .16s, background .16s;
 }
@@ -31,7 +31,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: 12px;
 }
 
 .header:focus-visible {
@@ -88,7 +88,7 @@
 /* Carried on the header so a collapsed card still says it holds edits. */
 .pending {
   flex: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 1px 8px;
   font-size: 11px;
   line-height: 17px;

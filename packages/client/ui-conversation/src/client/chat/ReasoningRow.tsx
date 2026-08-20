@@ -1,6 +1,6 @@
 /** Assistant reasoning disclosure, independent of Tool-call presentation. */
 import { useEffect, useRef, useState } from 'react'
-import { CodePilotIcon, DisclosureRow } from '@deepseek-ai/dsh-client-ui-primitives'
+import { DisclosureRow, IconThinkOutline14 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ChatViewSlotProps } from '../contract/slots.ts'
 import { useThrottledVisualUpdate } from './use-throttled-visual-update.ts'
 import a11yCss from './accessibility.module.css'
@@ -38,20 +38,14 @@ export function ReasoningRow({ text, running, t }: { text: string; running: bool
   }, [running, scheduleSummaryScroll, summary])
 
   return (
-    <div
-      className={css.root}
-      data-variant="think"
-      data-state={running ? 'running' : 'ok'}
-      data-beautifului="thinking"
-    >
+    <div className={css.root} data-variant="think" data-state={running ? 'running' : 'ok'}>
       {running && <span className={a11yCss.visuallyHidden}>{t('row.running')}</span>}
       <DisclosureRow
-        className={css.disclosure}
         rowClassName={css.row}
         leadingClassName={css.leading}
         titleClassName={css.title}
         chevronClassName={css.chevron}
-        icon={<CodePilotIcon name="sparkles" size={14} />}
+        icon={<IconThinkOutline14 size={14} />}
         title="Think"
         open={expanded}
         expandable

@@ -5,7 +5,6 @@ import type { SessionId, WorkspaceId } from '@deepseek-ai/dsh-client-runtime/cli
 import { makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 import type { RowDragProps } from '../src/client/rows/Rows.tsx'
-import type { SessionDetailOwnerProps } from '../src/client/contract/slots.ts'
 import { ProjectRowItem, SearchResultItem, SessionNodeItem } from '../src/client/rows/Rows.tsx'
 import type { GroupNode, SearchResultNode, SessionNode } from '../src/client/tree.ts'
 import { zh } from '../src/client/locales.ts'
@@ -121,34 +120,12 @@ describe('workspace browser rows', () => {
     }
     render(<ProjectRowItem group={group} onToggle={onToggle} onCreate={onCreate} t={t} />)
 
-    const project = screen.getByRole('treeitem')
-    expect(project.getAttribute('aria-expanded')).toBe('true')
-    expect(project.getAttribute('aria-current')).toBe('true')
-    expect(project.querySelector('[class*="folderActive"]')).toBeNull()
+    expect(screen.getByRole('treeitem').getAttribute('aria-expanded')).toBe('true')
     fireEvent.click(screen.getByRole('button', { name: '在“Project”中新建会话' }))
     expect(onCreate).toHaveBeenCalledOnce()
     expect(onToggle).not.toHaveBeenCalled()
     fireEvent.click(screen.getByText('Project'))
     expect(onToggle).toHaveBeenCalledOnce()
-  })
-
-  it('activates an inactive Workspace when the CodePilot desktop profile is present', () => {
-    document.documentElement.setAttribute('data-pilot-desktop', '')
-    try {
-      const onToggle = vi.fn()
-      const onCreate = vi.fn()
-      const group: GroupNode = {
-        key: 'project', workspaceId: wid('project'), cwd: '/projects/project', createdAt: 0, label: 'Project',
-        sessionCount: 0, expanded: false, containsCurrent: false, sessions: [],
-      }
-      render(<ProjectRowItem group={group} onToggle={onToggle} onCreate={onCreate} t={t} />)
-
-      fireEvent.click(screen.getByText('Project'))
-      expect(onCreate).toHaveBeenCalledOnce()
-      expect(onToggle).not.toHaveBeenCalled()
-    } finally {
-      document.documentElement.removeAttribute('data-pilot-desktop')
-    }
   })
 
   it('renders and opens a selected running Session row', () => {
@@ -480,44 +457,6 @@ describe('workspace browser rows', () => {
     }
   })
 
-  it('keeps rich Session facts in the owner-styled hover detail instead of widening the row', () => {
-    vi.useFakeTimers()
-    try {
-      const renderDetails = vi.fn((owner: SessionDetailOwnerProps) => (
-        <div className={owner.detailStyle.rowClassName}>
-          <span className={owner.detailStyle.labelClassName}>分支</span>
-          <span className={owner.detailStyle.valueClassName}>feature/sidebar</span>
-        </div>
-      ))
-      const node: SessionNode = {
-        id: sid('detail'), title: 'Sidebar research', blank: false, running: false,
-        runningSubagentCount: 0, completed: false, updatedAt: 0,
-        workspaceId: wid('workspace'), workspaceTitle: 'Pilot Harness', cwd: '/projects/pilot-harness',
-        agentPreset: 'code', projections: { sessionModel: { provider: 'codepilot', model: 'DeepSeek V4' } },
-      }
-      render(<SessionNodeItem node={node} currentId={undefined} now={0} onOpen={vi.fn()}
-        onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} renderDetails={renderDetails} t={t} />)
-
-      expect(screen.queryByText('feature/sidebar')).toBeNull()
-      fireEvent.pointerEnter(screen.getByRole('treeitem').parentElement as HTMLElement)
-      act(() => { vi.advanceTimersByTime(500) })
-
-      expect(screen.getByText('Pilot Harness')).toBeTruthy()
-      expect(screen.getByText('/projects/pilot-harness')).toBeTruthy()
-      expect(screen.getByText('code')).toBeTruthy()
-      expect(screen.getByText('feature/sidebar')).toBeTruthy()
-      expect(renderDetails).toHaveBeenCalledWith(expect.objectContaining({
-        sessionId: node.id,
-        workspaceId: node.workspaceId,
-        workspaceTitle: node.workspaceTitle,
-        cwd: node.cwd,
-        projections: node.projections,
-      }))
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-
   it.each([
     ['approval', '等待审批'],
     ['plan-review', '计划待审'],
@@ -560,12 +499,8 @@ describe('workspace browser rows', () => {
         onRename={vi.fn()} onFork={vi.fn()} onArchive={vi.fn()} t={t} />)
       fireEvent.pointerEnter(screen.getByRole('treeitem').parentElement as HTMLElement)
       act(() => { vi.advanceTimersByTime(500) })
-      const card = screen.getByRole('button', { name: '复制: Quiet' })
-      const status = screen.getByText('空闲')
-      const cardTime = screen.getAllByText('刚刚').find(node => card.contains(node))
-      expect(cardTime).toBeTruthy()
-      expect(status.parentElement?.parentElement).toBe(cardTime?.parentElement)
-      expect(card.firstElementChild?.children[1]).toBe(cardTime?.parentElement)
+      expect(screen.getByText('空闲')).toBeTruthy()
+      expect(screen.getAllByText('刚刚')).toHaveLength(2)
     } finally {
       vi.useRealTimers()
     }

@@ -10,7 +10,6 @@
 import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client'
 import {
   clampWidth, DETAILS_DEFAULT, DETAILS_MAX, DETAILS_MIN,
-  RIGHT_SIDEBAR_DEFAULT,
   SIDEBAR_DEFAULT, SIDEBAR_MAX, SIDEBAR_MIN,
 } from './columns.ts'
 
@@ -21,13 +20,7 @@ import {
  * `narrowExpanded` is the manual override that re-expands the auto-collapsed
  * sidebar over the squeezed center without rewriting the width preference.
  */
-type LayoutState = {
-  sidebar: number
-  rightSidebar: number
-  details: number
-  narrow: boolean
-  narrowExpanded: boolean
-}
+type LayoutState = { sidebar: number; details: number; narrow: boolean; narrowExpanded: boolean }
 
 /**
  * Annotation twin of the actions literal below (the export needs a declared
@@ -40,17 +33,6 @@ type LayoutActions = {
   setNarrow: (draft: LayoutState, narrow: boolean) => void
   openDetails: (draft: LayoutState) => void
   closeDetails: (draft: LayoutState) => void
-  openRightSidebar: (draft: LayoutState) => void
-  closeRightSidebar: (draft: LayoutState) => void
-}
-
-/** CodePilot's desktop rail is narrower than the browser Harness default. */
-const PILOT_SIDEBAR_DEFAULT = 240
-
-function initialSidebarWidth(): number {
-  return typeof document !== 'undefined' && document.documentElement.hasAttribute('data-pilot-desktop')
-    ? PILOT_SIDEBAR_DEFAULT
-    : SIDEBAR_DEFAULT
 }
 
 /**
@@ -65,9 +47,7 @@ function initialSidebarWidth(): number {
  */
 export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutActions>  {
   const handle = defineStore({
-    init: (): LayoutState => ({
-      sidebar: initialSidebarWidth(), rightSidebar: 0, details: 0, narrow: false, narrowExpanded: false,
-    }),
+    init: (): LayoutState => ({ sidebar: SIDEBAR_DEFAULT, details: 0, narrow: false, narrowExpanded: false }),
     actions: {
       setSidebar: (d, px: number) => { d.sidebar = clampWidth(px, SIDEBAR_MIN, SIDEBAR_MAX) },
       setDetails: (d, px: number) => { d.details = clampWidth(px, DETAILS_MIN, DETAILS_MAX) },
@@ -75,7 +55,7 @@ export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutAction
       // untouched, so re-widening restores the pre-squeeze layout.
       toggleSidebar: (d) => {
         if (d.narrow) d.narrowExpanded = !d.narrowExpanded
-        else d.sidebar = d.sidebar === 0 ? initialSidebarWidth() : 0
+        else d.sidebar = d.sidebar === 0 ? SIDEBAR_DEFAULT : 0
       },
       // Crossing the breakpoint in either direction drops the override: the
       // narrow default is auto-collapsed, the wide state is the preference.
@@ -86,8 +66,6 @@ export function createLayoutStore(): EngineStoreHandle<LayoutState, LayoutAction
       },
       openDetails: (d) => { if (d.details === 0) d.details = DETAILS_DEFAULT },
       closeDetails: (d) => { d.details = 0 },
-      openRightSidebar: (d) => { if (d.rightSidebar === 0) d.rightSidebar = RIGHT_SIDEBAR_DEFAULT },
-      closeRightSidebar: (d) => { d.rightSidebar = 0 },
     },
   })
   return handle

@@ -105,9 +105,8 @@ describe('apply wiring', () => {
     // one search row registers under both grep and glob; the web rows register
     // one component under both web tool names.
     expect(b.slots.entries('conversation.chat.node').map(entry => entry.options.key)).not.toContain('tool-call')
-    // Built-in statistics are integrated into ContextMeter instead of creating
-    // an extra information strip under the composer.
-    expect(b.slots.entries('conversation.composer.dock').map(e => e.options.id)).toEqual([])
+    // Stats stick with the composer (not inside ChatView).
+    expect(b.slots.entries('conversation.composer.dock').map(e => e.options.id)).toEqual(['stats'])
     await b.runtime.dispose()
   })
 

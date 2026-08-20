@@ -1,3 +1,1 @@
-- treeitem "Waiting for answer Use the ask_user_question tool to now Session actions for Use the ask_user_question tool to" [selected]:
-  - text: Waiting for answer Use the ask_user_question tool to now
-  - button "Session actions for Use the ask_user_question tool to"
+- treeitem "Waiting for answer Use the ask_user_question tool to now" [selected]

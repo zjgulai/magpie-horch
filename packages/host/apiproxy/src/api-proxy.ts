@@ -297,9 +297,6 @@ async function buildModelCatalog(ctx: Context): Promise<{
           id: model.id,
           name: model.name,
           ...model.description === undefined ? {} : { description: model.description },
-          ...resolved.inputModalities === undefined
-            ? {}
-            : { inputModalities: [...resolved.inputModalities] },
           ...reasoning === undefined ? {} : { reasoning },
         }
       }))
@@ -2192,43 +2189,8 @@ export function createApiProxy(ctx: Context, defaults: ApiProxyDefaults): ApiPro
         const { sessionId } = request.payload
         const found = await agentFor(sessionId)
         if ('error' in found) return err(request, found.error)
+        const current = selectionFor(found.agent).current
         const { groups, failures } = await buildModelCatalog(ctx)
-        const selection = selectionFor(found.agent)
-        let current = selection.current
-        // A desktop profile can intentionally start with no configured route.
-        // Once a provider advertises its first model, repair only a still-blank
-        // session: a logged session must never be silently moved to a different
-        // provider because its route is temporarily absent.
-        const fallbackGroup = groups[0]
-        const fallbackModel = fallbackGroup?.models[0]
-        if (!routeServed(current.provider)
-          && found.agent.session.requestHeader()?.config === undefined
-          && fallbackGroup !== undefined
-          && fallbackModel !== undefined) {
-          try {
-            const resolved = await ctx.llm.resolveCallConfig({
-              provider: fallbackGroup.id,
-              model: fallbackModel.id,
-            })
-            current = {
-              provider: resolved.provider,
-              model: resolved.model,
-              ...resolved.reasoningEffort === undefined
-                ? {}
-                : { reasoningEffort: resolved.reasoningEffort },
-            }
-            selection.current = current
-            try {
-              await defaults.saveDefaultModelSelection?.(current)
-            } catch (error: unknown) {
-              ctx.logger.warn(
-                `api-proxy: the first available model applies to this blank session but was not saved as the default: ${String(error)}`,
-              )
-            }
-          } catch (error: unknown) {
-            ctx.logger.warn(`api-proxy: failed to select the first available model: ${String(error)}`)
-          }
-        }
         const routable = routeServed(current.provider)
         return ok(request, { current: { ...current }, routable, groups, failures })
       },

@@ -1,6 +1,9 @@
 - banner:
   - navigation "Session hierarchy":
     - button "{{workspace}}" [disabled]
+  - button "Session log":
+    - text: Session log
+    - img
   - tablist:
     - tab "Chat" [selected]
     - tab "Trajectory"
@@ -344,11 +347,11 @@
 - button "Back to bottom":
   - img
 - textbox "Message the agent"
-- button "Commands"
+- button "Commands":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "Context details" [expanded]
-- dialog "Context details": Context details 28 turns · 28 steps LLM {{duration}}
 - button "Send message" [disabled]
+- text: 28 turns · 28 steps LLM {{duration}}

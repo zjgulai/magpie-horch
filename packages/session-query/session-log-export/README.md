@@ -17,13 +17,14 @@ The Host download endpoint flushes a live root Session before `readRaw`, so a sl
 
 The modal reports preparation, download start, or failure. Closing it does not cancel an in-flight download and does not reopen it when that operation later settles. One Session admits one active download at a time; repeated gestures share that operation.
 
-## Installation
+## Composition
 
-```sh
-dsh plugin --profile web add https://github.com/op7418/pilot-harness/releases/latest/download/deepseek-ai-dsh-session-log-export-0.1.0-rc.5.tgz
+```yaml
+- id: session-log-download
+  name: '@deepseek-ai/dsh-session-log-export'
 ```
 
-Restart the Web profile, then confirm `session-log-download` with `dsh --profile web --dump-config`. Remove it with `dsh plugin --profile web remove @deepseek-ai/dsh-session-log-export`. The Web bundle mounts the package beside `dsh-host-apiproxy`, `dsh-commands`, `dsh-client-ui-commands`, and `dsh-client-ui-trajectory`. The package contributes its per-Session export button and modal to `conversation.trajectory.toolbar`; the conversation header stays focused on navigation and identity.
+The Web bundle mounts the package beside `dsh-host-apiproxy`, `dsh-commands`, `dsh-client-ui-commands`, and `dsh-client-ui-conversation`. The package contributes its button and modal to the right-aligned `conversation.session.header.utilities` list, independently of the title-adjacent mode, Subagent, and Task entries in `conversation.session.header.actions`; Trajectory carries no export control.
 
 ## Model Experience
 

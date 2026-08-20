@@ -124,9 +124,9 @@ describe('web e2e: settings modal and General preferences', () => {
     await page.keyboard.press('Escape')
     await expect.poll(() => page.getByRole('dialog', { name: '设置' }).count(), { timeout: 5_000 }).toBe(0)
     expect(await trigger.getAttribute('aria-expanded')).toBe('false')
-    // Close path 2: the back action above General (focus lands there on open).
+    // Close path 2: the header close button (focus lands there on open).
     await trigger.click()
-    await page.getByRole('dialog', { name: '设置' }).getByRole('button', { name: '返回' }).click()
+    await page.getByRole('dialog', { name: '设置' }).getByRole('button', { name: '关闭' }).click()
     await expect.poll(() => page.getByRole('dialog', { name: '设置' }).count(), { timeout: 5_000 }).toBe(0)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)

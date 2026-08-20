@@ -29,7 +29,7 @@
 
 .failure button {
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 4px 10px;
   background: transparent;
   color: var(--dsw-alias-label-primary);
@@ -113,7 +113,7 @@
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 14px;
+  border-radius: 10px;
   background: var(--dsw-alias-bg-layer-3);
 }
 
@@ -172,7 +172,7 @@
   width: 7px;
   height: 7px;
   flex: none;
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--dsw-alias-label-tertiary);
 }
 
@@ -192,7 +192,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 20px;
-  border-radius: 8px;
+  border-radius: 5px;
   padding: 1px 6px;
   background: var(--dsw-alias-bg-layer-1);
   color: var(--dsw-alias-label-secondary);

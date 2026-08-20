@@ -188,7 +188,7 @@ export function CustomProviderCard(props: CustomProviderCardProps): ReactNode {
   }
 
   return (
-    <div className={styles['editor']} data-pilot-provider-editor>
+    <div className={styles['editor']}>
       <div className={styles['editorHeader']}>
         <span className={styles['editorTitle']}>{t('customTitle')}</span>
       </div>

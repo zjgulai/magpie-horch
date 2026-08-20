@@ -5,7 +5,7 @@
    because folding a source line destroys the indentation a diff is read by. */
 
 .block {
-  --dsl-diff-radius: 14px;
+  --dsl-diff-radius: 12px;
   --dsl-diff-line-height: 22px;
 
   position: relative;

@@ -3,14 +3,6 @@
   "version": "0.1.0-rc.8",
   "license": "MIT",
   "private": true,
-  "homepage": "https://github.com/op7418/pilot-harness#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/op7418/pilot-harness.git"
-  },
-  "bugs": {
-    "url": "https://github.com/op7418/pilot-harness/issues"
-  },
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {
@@ -152,10 +144,6 @@
     "demo:acp": "node --import tsx packages/examples/acp-demo/src/bin.ts --config examples/acp-agent/cordis.yml",
     "mock:llm": "node --import tsx packages/test-support/llm-mock-server/src/bin.ts",
     "dev:web": "tsx scripts/dev-web.ts --poll",
-    "desktop:dev": "pnpm run build && pnpm --filter @deepseek-ai/dsh-desktop run dev",
-    "desktop:build": "pnpm run build && pnpm --filter @deepseek-ai/dsh-desktop run build",
-    "desktop:test": "pnpm --filter @deepseek-ai/dsh-desktop run test",
-    "desktop:pack": "pnpm run build && pnpm --filter @deepseek-ai/dsh-desktop run pack",
     "postinstall": "node scripts/install-lefthook.mjs"
   },
   "devDependencies": {
@@ -188,8 +176,6 @@
     "oxlint": "1.76.0",
     "oxlint-tsgolint": "7.0.2001",
     "publint": "^0.3.21",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
     "smol-toml": "^1.7.1",
     "spdx-expression-parse": "^5.0.0",
     "tsdown": "^0.22.2",

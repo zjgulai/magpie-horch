@@ -626,36 +626,6 @@ describe('boot', () => {
     }
   })
 
-  it('falls back to standard package resolution when Loader internals are unavailable', async () => {
-    const dir = tmp()
-    const plugin = join(dir, 'node_modules', 'portable-loader-plugin')
-    mkdirSync(plugin, { recursive: true })
-    writeFileSync(join(plugin, 'package.json'), JSON.stringify({
-      name: 'portable-loader-plugin',
-      type: 'module',
-      exports: './index.mjs',
-    }))
-    writeFileSync(join(plugin, 'index.mjs'), 'export function apply(ctx) { ctx.provide("portablePluginLoaded", true) }\n')
-    writeFileSync(join(dir, 'cordis.yml'), [
-      '- id: portable-group',
-      '  name: cordis:group',
-      '  group: true',
-      '  config:',
-      '    - id: portable',
-      '      name: portable-loader-plugin',
-      '',
-    ].join('\n'))
-
-    const ctx = await boot(NAME, join(dir, 'cordis.yml'), undefined, (hostCtx) => {
-      hostCtx.loader.internal = undefined
-    })
-    try {
-      expect(ctx.get('portablePluginLoaded')).toBe(true)
-    } finally {
-      await ctx.fiber.dispose()
-    }
-  })
-
   it('runs host preparation before the Loader tree mounts', async () => {
     const dir = tmp()
     writeFileSync(join(dir, 'noop.mjs'), 'export const name = "noop"\nexport function apply() {}\n')

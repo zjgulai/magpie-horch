@@ -1,15 +1,24 @@
 - dialog "设置":
   - navigation:
     - text: 设置
-    - button "返回"
-    - button "通用设置"
-    - button "服务商"
-    - button "插件"
-    - button "模型"
-    - button "Agent 预设"
-    - button "关于"
-  - heading "服务商" [level=2]
-  - paragraph: 连接模型服务、管理凭据，并自定义服务地址。
+    - button "通用设置":
+      - img
+      - text: 通用设置
+    - button "模型":
+      - img
+      - text: 模型
+    - button "插件":
+      - img
+      - text: 插件
+    - button "Agent 预设":
+      - img
+      - text: Agent 预设
+  - button "打开配置文件"
+  - button "关闭":
+    - img
+    - text: 关闭
+  - heading "模型" [level=2]
+  - paragraph: 填入各提供方的 API 密钥即可使用其模型。
   - list:
     - listitem:
       - text: DeepSeek
@@ -31,7 +40,7 @@
           - textbox "显示名称 1":
             - /placeholder: 显示名称
             - text: DeepSeek-V4-Pro
-          - button "模型能力 1":
+          - button "容量 1":
             - img
           - button "删除模型 1":
             - img
@@ -41,7 +50,7 @@
           - textbox "显示名称 2":
             - /placeholder: 显示名称
             - text: Private Preview
-          - button "模型能力 2" [expanded]:
+          - button "容量 2" [expanded]:
             - img
           - button "删除模型 2":
             - img
@@ -58,5 +67,9 @@
             - text: 添加模型
       - button "取消"
       - button "保存"
-  - button "添加服务商"
-  - button "添加自定义服务商"
+  - button "添加提供方":
+    - img
+    - text: 添加提供方
+  - button "添加自定义提供方":
+    - img
+    - text: 添加自定义提供方

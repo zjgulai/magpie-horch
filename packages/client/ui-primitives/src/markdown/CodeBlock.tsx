@@ -6,7 +6,6 @@
 
 import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import clsx from 'clsx'
-import { CodePilotIcon } from '../CodePilotIcon.tsx'
 import { writeClipboard } from '../clipboard.ts'
 import { grammarLoadCount, highlightToHtml, subscribeGrammarLoaded } from './highlight.ts'
 import css from './CodeBlock.module.css'
@@ -48,13 +47,7 @@ export function CodeBlock({ code, lang, className, copyLabel = '复制', copiedL
 
   const body = html === undefined
     ? (
-      <pre className={css.plain}>
-        <code>
-          {trimmed.split('\n').map((line, index) => (
-            <span className={css.line} key={index}>{line || ' '}</span>
-          ))}
-        </code>
-      </pre>
+      <pre className={css.plain}><code>{trimmed}</code></pre>
     )
     : (
   // shiki's output is a static span tree it generated from `code` (no user
@@ -64,27 +57,13 @@ export function CodeBlock({ code, lang, className, copyLabel = '复制', copiedL
     )
 
   return (
-    <div
-      ref={rootRef}
-      className={clsx(css.block, 'md-code-block', className)}
-      data-beautifului="code-block"
-    >
+    <div ref={rootRef} className={clsx(css.block, 'md-code-block', className)}>
       <div className={css.bannerWrap}>
         <div className={css.banner}>
-          <div className={css.infostring}>
-            <CodePilotIcon name="file" size={13} />
-            <span>{lang ?? 'Code'}</span>
-          </div>
+          <div className={css.infostring}>{lang ?? ''}</div>
           <div className={css.action}>
-            <button
-              type="button"
-              className={css.copyButton}
-              aria-label={copied ? copiedLabel : copyLabel}
-              title={copied ? copiedLabel : copyLabel}
-              onClick={onCopy}
-            >
-              <CodePilotIcon name={copied ? 'success' : 'copy'} size={13} />
-              <span>{copied ? copiedLabel : copyLabel}</span>
+            <button type="button" className={css.copyButton} onClick={onCopy}>
+              {copied ? copiedLabel : copyLabel}
             </button>
           </div>
         </div>

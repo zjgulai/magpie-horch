@@ -43,16 +43,6 @@
   grid-column: 2;
 }
 
-.subtitle {
-  grid-row: 2;
-  grid-column: 1 / -1;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  text-align: center;
-}
-
 .previewBadge {
   grid-row: 1;
   grid-column: 3;
@@ -61,7 +51,7 @@
   margin-left: -3px;
   padding: 1px 7px 0;
   border: 1px solid var(--dsw-alias-interactive-bg-hover);
-  border-radius: 8px;
+  border-radius: 24px;
   background: var(--dsw-alias-state-business-tertiary);
   color: var(--dsw-alias-label-primary-bluish);
   font-family: var(--ds-font-family-code);
@@ -138,12 +128,12 @@
 .workspace {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   max-width: min(100%, 360px);
-  height: 28px;
+  min-height: 28px;
   padding: 0 8px;
   border: none;
-  border-radius: 8px;
+  border-radius: 16px;
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font-size: 13px;
@@ -165,15 +155,10 @@
 
 .folder {
   flex: none;
-  display: block;
-  width: 14px;
-  height: 14px;
   color: var(--dsw-alias-label-primary);
 }
 
 .workspaceLabel {
-  display: block;
-  line-height: 20px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -181,9 +166,6 @@
 
 .chevron {
   flex: none;
-  display: block;
-  width: 12px;
-  height: 12px;
   color: var(--dsw-alias-label-caption);
 }
 
@@ -196,7 +178,7 @@
   height: 44px;
   padding: 7px 14px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
+  border-radius: 22px;
   outline: none;
   background: transparent;
   font-size: 14px;

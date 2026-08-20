@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// StatsLine (Context popover readout): totals derivation + the RFC hard
+// StatsLine (composer.dock entry): totals derivation + the RFC hard
 // acceptance — zero renders during streaming.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -203,21 +203,6 @@ describe('StatsLine', () => {
       contextPressure: {},
     })} />)
     expect(emptyView.container.textContent).toBe('')
-  })
-
-  it('keeps one hook order while an empty or context presentation becomes a line', () => {
-    const { set, source } = makeSource()
-    const values = {
-      tokenUsage: { uncachedInputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 },
-    }
-    const view = render(<StatsLine {...props(source, values)} display="line" />)
-    expect(view.container.textContent).toBe('')
-    act(() => { set({ nodes: [assistant(1, 1)] }) })
-    expect(view.container.textContent).toBe('1 turns · 1 steps')
-    view.rerender(<StatsLine {...props(source, values)} display="context" />)
-    expect(view.container.querySelector('[data-beautifului="context-stats"]')).not.toBeNull()
-    view.rerender(<StatsLine {...props(source, values)} display="line" />)
-    expect(view.container.querySelector('[data-pilot-stats-line]')).not.toBeNull()
   })
 
   it('reveals the full line in a delayed hover tooltip only while the row is clipped', () => {

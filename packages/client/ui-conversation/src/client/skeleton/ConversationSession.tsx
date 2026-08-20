@@ -77,7 +77,7 @@ export function ConversationSessionHeader({
       aria-hidden={hideChrome || undefined}
     >
       {!hideChrome && (
-        <div className={css.headerInner} data-pilot-conversation-header>
+        <>
           <div className={css.titleRow}>
             <div className={css.titleCluster}>
               <nav className={css.crumbs} aria-label={t('session.hierarchy')}>
@@ -89,7 +89,6 @@ export function ConversationSessionHeader({
                       <button
                         type="button"
                         className={clsx(css.crumb, last && css.crumbCurrent)}
-                        data-pilot-crumb
                         disabled={last}
                         onClick={() => { open(summary.id) }}
                       >
@@ -104,17 +103,18 @@ export function ConversationSessionHeader({
                 {renderSlot('conversation.session.header.actions', {})}
               </div>
             </div>
+            <div className={css.headerUtilities}>
+              {renderSlot('conversation.session.header.utilities', {})}
+            </div>
           </div>
           {tabs.length > 1 && (
-            <div className={css.tabs} role="tablist" data-pilot-conversation-tabs>
+            <div className={css.tabs} role="tablist">
               {tabs.map(viewTab => (
                 <button
                   key={viewTab.id}
                   type="button"
                   role="tab"
                   aria-selected={viewTab.id === active?.id}
-                  data-pilot-conversation-tab={viewTab.id}
-                  data-state={viewTab.id === active?.id ? 'active' : 'inactive'}
                   className={clsx(css.tab, viewTab.id === active?.id && css.tabActive)}
                   onClick={() => { actions.setView(viewTab.id) }}
                 >
@@ -123,10 +123,7 @@ export function ConversationSessionHeader({
               ))}
             </div>
           )}
-          <div className={css.headerUtilities}>
-            {renderSlot('conversation.session.header.utilities', {})}
-          </div>
-        </div>
+        </>
       )}
     </header>
   )

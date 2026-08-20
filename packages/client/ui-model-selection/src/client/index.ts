@@ -17,7 +17,6 @@ import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
 import type { CommandUiContract, SelectOption } from '@deepseek-ai/dsh-client-ui-commands/client'
 // Type-only: pulls the ui-conversation SlotMap merge (the input.model seat).
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
-import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
 // Type-only: pulls the locale plugin's Context merge (ctx.locale).
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type { TranslateNS } from '@deepseek-ai/dsh-client-ui-slots'
@@ -25,7 +24,6 @@ import type { ModelDirectoryState } from './directory.ts'
 import { ModelDirectoryResolver } from './service.ts'
 import type { ModelSelectInjected } from './slots.ts'
 import { ModelSelect } from './ModelSelect.tsx'
-import { ModelSessionDetail } from './ModelSessionDetail.tsx'
 import { en, zh, type ModelKey } from './locales.ts'
 
 export { ModelDirectory } from './directory.ts'
@@ -174,11 +172,5 @@ export function apply(ctx: ClientContext): void {
         }
       },
     }, ModelSelect))
-    scope.slots.inject('sidebar.workspaces.session.detail', () => scope.slots.register({
-      name: 'sidebar.workspaces.session.detail',
-      id: 'session-model',
-      order: 20,
-      locale: NS,
-    }, ModelSessionDetail))
   })
 }

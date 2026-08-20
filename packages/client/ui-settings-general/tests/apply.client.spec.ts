@@ -1,4 +1,4 @@
-/** Ownerless-copy registrations: shell seats, General/About sections, and HMR recovery. */
+/** Ownerless-copy registrations: the five seats, dictionaries, thunked labels, and HMR recovery. */
 import { Context } from '@deepseek-ai/cordis'
 import { describe, expect, it, vi } from 'vitest'
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
@@ -9,7 +9,6 @@ import { apply as settingsApply, inject as settingsInject } from '@deepseek-ai/d
 import { apply, inject } from '@deepseek-ai/dsh-client-ui-settings-general/client'
 import { CloseLabel, HeaderContent, TriggerContent } from '../src/client/chrome.tsx'
 import { GeneralSection } from '../src/client/GeneralSection.tsx'
-import { AboutSection } from '../src/client/AboutSection.tsx'
 import { SettingsDocumentAction } from '../src/client/SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from '../src/client/SettingsDocumentAction.tsx'
 
@@ -21,6 +20,7 @@ import type { SettingsDocumentActionInjected } from '../src/client/SettingsDocum
 const SEATS = [
   ['settings.trigger', TriggerContent],
   ['settings.header', HeaderContent],
+  ['settings.action', SettingsDocumentAction],
   ['settings.close', CloseLabel],
   ['settings.section', GeneralSection],
 ] as const
@@ -77,16 +77,12 @@ function generalEntry(slots: SlotRegistry) {
   return slots.entries('settings.section').find(e => e.component === GeneralSection)
 }
 
-function aboutEntry(slots: SlotRegistry) {
-  return slots.entries('settings.section').find(e => e.component === AboutSection)
-}
-
 describe('ui-settings-general apply', () => {
   it('declares the services it uses', () => {
     expect(inject).toEqual(['slots', 'locale', 'connection', 'settingsScope'])
   })
 
-  it('fills the shell, General/About sections, and loopback configuration row before or after apply', async () => {
+  it('fills all five seats for declarations before or after apply', async () => {
     const before = await bench()
     declare(before.slots)
     await before.ctx.plugin({ inject: [...inject], apply }).await()
@@ -97,15 +93,12 @@ describe('ui-settings-general apply', () => {
     expect(entry.options).toMatchObject({ id: 'general', order: 0 })
     // The nav label is a locale-following thunk; owners resolve at read time.
     expect(resolveSlotLabel(entry.options.label)).toBe('通用设置')
-    expect(aboutEntry(before.slots)?.options).toMatchObject({ id: 'about', order: 100 })
-    expect(resolveSlotLabel(aboutEntry(before.slots)!.options.label)).toBe('关于')
     expect(before.slots.spec('settings.general.item')).toEqual({ kind: 'list', scope: 'root' })
-    expect(before.slots.entries('settings.general.item')[0]!.component).toBe(SettingsDocumentAction)
+    expect(before.slots.entries('settings.general.item')).toEqual([])
     // The onboarding hole stays declared for feature-owned steps; this plugin
     // no longer seats one.
     expect(before.slots.entries('settings.onboarding')).toEqual([])
-    expect(before.slots.entries('settings.action')).toEqual([])
-    const action = before.slots.entries('settings.general.item')[0]!
+    const action = before.slots.entries('settings.action')[0]!
     const actionInjected = (action.inject as unknown as () => SettingsDocumentActionInjected)()
     expect(actionInjected.controller.store.getSnapshot().status).toBe('idle')
     expect(actionInjected.hooks.snapshot).toBe(actionInjected.controller.store)
@@ -113,7 +106,6 @@ describe('ui-settings-general apply', () => {
     for (const [name] of SEATS) {
       expect(before.slots.entries(name)[0]!.locale).toBe('settings')
     }
-    expect(action.locale).toBe('settings')
     const after = await bench()
     await after.ctx.plugin({ inject: [...inject], apply }).await()
     for (const [name] of SEATS) expect(after.slots.entries(name)).toHaveLength(0)
@@ -122,11 +114,10 @@ describe('ui-settings-general apply', () => {
     for (const [name, component] of SEATS) {
       expect(after.slots.entries(name)[0]!.component).toBe(component)
       // The self-inflicted ledger notifications hit the duplicate guard.
-      expect(after.slots.entries(name)).toHaveLength(name === 'settings.section' ? 2 : 1)
+      expect(after.slots.entries(name)).toHaveLength(1)
     }
     await vi.waitFor(() => {
       expect(after.slots.spec('settings.general.item')).toEqual({ kind: 'list', scope: 'root' })
-      expect(after.slots.entries('settings.general.item')[0]!.component).toBe(SettingsDocumentAction)
     })
   })
 
@@ -137,7 +128,7 @@ describe('ui-settings-general apply', () => {
     await fiber.await()
     expect(b.locale.bind('settings')('title')).toBe('设置')
     b.locale.setLocale('en')
-    expect(b.locale.bind('settings')('close')).toBe('Back')
+    expect(b.locale.bind('settings')('close')).toBe('Close')
     b.locale.setLocale('zh')
     await fiber.dispose()
     // The (ns, locale) seats are free again — the dictionary disposer ran.
@@ -155,20 +146,18 @@ describe('ui-settings-general apply', () => {
     // subscription), not re-registration.
     SEATS.forEach(([name], i) => {
       expect(b.slots.getVersion(name)).toBe(zhVersions[i]!)
-      expect(b.slots.entries(name)).toHaveLength(name === 'settings.section' ? 2 : 1)
+      expect(b.slots.entries(name)).toHaveLength(1)
     })
     expect(resolveSlotLabel(generalEntry(b.slots)!.options.label)).toBe('General')
-    expect(resolveSlotLabel(aboutEntry(b.slots)!.options.label)).toBe('About')
     b.locale.setLocale('zh')
     expect(resolveSlotLabel(generalEntry(b.slots)!.options.label)).toBe('通用设置')
-    expect(resolveSlotLabel(aboutEntry(b.slots)!.options.label)).toBe('关于')
   })
 
   it('reads availability from the shared mirror and follows its reconnect refresh', async () => {
     const b = await bench()
     declare(b.slots)
     await b.ctx.plugin({ inject: [...inject], apply }).await()
-    const entry = b.slots.entries('settings.general.item')[0]!
+    const entry = b.slots.entries('settings.action')[0]!
     const { controller } = (entry.inject as unknown as () => SettingsDocumentActionInjected)()
     // The mirror read once at its own boot; the action's load adds no read.
     await vi.waitFor(() => { expect(b.settingsDescribe).toHaveBeenCalledOnce() })
@@ -185,7 +174,6 @@ describe('ui-settings-general apply', () => {
     const fiber = b.ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
     expect(b.slots.entries('settings.action')).toEqual([])
-    expect(b.slots.entries('settings.general.item')).toEqual([])
     expect(b.settingsDescribe).not.toHaveBeenCalled()
     await fiber.dispose()
     for (const [name] of SEATS) expect(b.slots.entries(name)).toEqual([])
@@ -205,7 +193,7 @@ describe('ui-settings-general apply', () => {
     for (const [name, component] of SEATS) {
       expect(b.slots.entries(name)[0]!.component).toBe(component)
     }
-    expect(b.slots.entries('settings.general.item')[0]!.component).toBe(SettingsDocumentAction)
+    expect(b.slots.entries('settings.general.item')).toEqual([])
     expect(b.slots.spec('settings.general.item')).toEqual({ kind: 'list', scope: 'root' })
     // The recovered registrations still ride the locale path.
     b.locale.setLocale('en')

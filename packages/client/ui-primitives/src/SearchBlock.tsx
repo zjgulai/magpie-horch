@@ -10,7 +10,6 @@
 
 import { useCallback, useState, type ReactNode } from 'react'
 import clsx from 'clsx'
-import { CodePilotIcon } from './CodePilotIcon.tsx'
 import { headTailCap } from './head-tail-cap.ts'
 import { useCopyFeedback } from './use-copy-feedback.ts'
 import css from './SearchBlock.module.css'
@@ -231,7 +230,6 @@ export function SearchBlock(props: SearchBlockProps) {
         aria-expanded={!row.collapsed}
         onClick={() => { toggleFile(row.index) }}
       >
-        <CodePilotIcon name="file" size={13} className={css.fileIcon} />
         <span className={css.filePath}>{row.path}</span>
         <span className={css.fileCount}>{row.count}</span>
       </button>
@@ -239,26 +237,12 @@ export function SearchBlock(props: SearchBlockProps) {
   }
 
   return (
-    <div
-      className={clsx(css.block, className)}
-      data-search={props.kind}
-      data-beautifului="search-results"
-    >
+    <div className={clsx(css.block, className)} data-search={props.kind}>
       <div className={css.header}>
-        <span className={css.summary}>
-          <CodePilotIcon name="search" size={13} />
-          <span>{summaryText(props, shown, truncated, total)}</span>
-        </span>
+        <span className={css.summary}>{summaryText(props, shown, truncated, total)}</span>
         {!empty && (
-          <button
-            type="button"
-            className={css.copyButton}
-            aria-label={copied ? '复制成功' : '复制'}
-            title={copied ? '复制成功' : '复制'}
-            onClick={onCopy}
-          >
-            <CodePilotIcon name={copied ? 'success' : 'copy'} size={13} />
-            <span>{copied ? '复制成功' : '复制'}</span>
+          <button type="button" className={css.copyButton} onClick={onCopy}>
+            {copied ? '复制成功' : '复制'}
           </button>
         )}
       </div>

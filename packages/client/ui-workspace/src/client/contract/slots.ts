@@ -57,32 +57,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
     'conversation.hero.workspace.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }
     /** Directory-flow hole under the sidebar browsing region (declared by the WorkspaceBrowser entry). */
     'sidebar.workspaces.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }
-    /** Plugin-contributed rows inside one Session hover summary. */
-    'sidebar.workspaces.session.detail': { kind: 'list'; scope: 'root'; owner: SessionDetailOwnerProps }
   }
-}
-
-/** Semantic detail rows whose visual treatment stays owned by ui-workspace. */
-export type SessionDetailKind = 'branch' | 'model' | 'reminder'
-
-/** Plain presentation facts shared with optional Session-detail plugins. */
-export interface SessionDetailStyle {
-  rowClassName?: string | undefined
-  labelClassName?: string | undefined
-  valueClassName?: string | undefined
-  iconNames: Readonly<Record<SessionDetailKind, 'git' | 'model' | 'clock'>>
-}
-
-/** Render-occurrence facts offered to session-detail plugins. */
-export interface SessionDetailOwnerProps {
-  sessionId: SessionId
-  workspaceId?: WorkspaceId | undefined
-  workspaceTitle: string
-  cwd?: string | undefined
-  /** Host projection values stay open so optional domain plugins remain decoupled. */
-  projections: Readonly<Record<string, unknown>>
-  /** Serializable classes and icon names keep optional rows inside the owner's visual system. */
-  detailStyle: SessionDetailStyle
 }
 
 /** The two directory-flow holes; a flow package's client half registers its one component into both. */
@@ -167,7 +142,7 @@ export type WorkspaceBrowserInjected = {
 /** Full browser props: shell owner share + viewing store + injected actions + the locale seat. */
 export type WorkspaceBrowserProps =
   PropsRuntime<'sidebar.workspaces'>
-  & PropsRenderSlots<'sidebar.workspaces.directoryFlow' | 'sidebar.workspaces.session.detail'>
+  & PropsRenderSlots<'sidebar.workspaces.directoryFlow'>
   & PropsStore<ReturnType<typeof createWorkspaceViewStore>>
   & Omit<WorkspaceBrowserInjected, 'hooks'>
   & PropsHooks<WorkspaceBrowserInjected['hooks']>

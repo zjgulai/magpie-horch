@@ -88,8 +88,7 @@ class Hmr extends Service {
 
   public baseDir: string
 
-  private internal!: ModuleLoader
-  private configOnly = false
+  private internal: ModuleLoader
   private watcher!: FSWatcher
   private readonly configs = new Map<string, ConfigRegistration>()
   private readonly configRefreshes = new WeakMap<object, ConfigRefresh>()
@@ -118,15 +117,10 @@ class Hmr extends Service {
 
   constructor(ctx: Context, public config: Hmr.Config) {
     super(ctx, 'hmr')
-    const internal = this.ctx.loader.internal
-    if (internal === undefined) {
-      if (config.root.length > 0) {
-        throw new Error('--expose-internals is required for module HMR')
-      }
-      this.configOnly = true
-    } else {
-      this.internal = internal
+    if (!this.ctx.loader.internal) {
+      throw new Error('--expose-internals is required for HMR service')
     }
+    this.internal = this.ctx.loader.internal
     this.baseDir = fileURLToPath(new URL(config.base || '.', ctx.baseUrl))
   }
 
@@ -212,13 +206,6 @@ class Hmr extends Service {
 
     const { loader } = this.ctx
     const { root, ignored } = this.config
-    // Exact config-file watching only needs chokidar, so it remains available
-    // in Electron's Node mode. Module graph reloading below still requires
-    // Node's private ESM loader and is rejected when non-empty roots exist.
-    if (this.configOnly) {
-      this.watcher = watch([], { ignoreInitial: true })
-      return
-    }
     if (!this.config.base) {
       this.ctx.logger.info('watching %o', root)
     } else {

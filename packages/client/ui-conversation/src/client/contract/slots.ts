@@ -187,15 +187,16 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * for anything that needs a line to itself (queue rows, a todo strip, a
      * goal bar). Pick this over the three seats below when your content wraps
      * or carries prose; pick `conversation.composer.dock` for an ambient
-     * detail inside the Context popover, and `conversation.input.left` /
+     * readout under the card, and `conversation.input.left` /
      * `.right` for a small control INSIDE the card's tool row.
      * Read only `session`/`input` off the owner share ({@link InputZone}) —
      * both are point-in-time snapshots re-rendered for you, never subscribe.
      */
     'conversation.input.dock': { kind: 'list'; scope: 'session'; owner: InputZone }
     /**
-     * The Context popover's extension seat for ambient conversation details.
-     * Same {@link InputZone} owner share as the other
+     * The band under the composer card, inside the bar's width column — the
+     * seat for an ambient readout about the conversation (the shipped stats
+     * line lives here). Same {@link InputZone} owner share as the other
      * regions. Anything the user must click belongs in the tool row instead
      * (`conversation.input.left` / `.right`); anything needing its own line
      * above the card belongs in `conversation.input.dock`.
@@ -524,10 +525,8 @@ export interface ComposerBarOwnerProps {
   leftItems?: ReactNode
   /** input.right slot entries (tool row, before the primary button). */
   rightItems?: ReactNode
-  /** Optional in-card footer, used by the blank-session workspace/mode row. */
+  /** composer.dock entries (stats line), rendered under the card inside the bar's width column. */
   footer?: ReactNode
-  /** Session context extensions, rendered inside the Context popover. */
-  contextItems?: ReactNode
 }
 
 /** Injected share of the composer-bar entry (package-internal faces). */

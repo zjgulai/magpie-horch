@@ -128,7 +128,7 @@ describe('web e2e: the composer model switch is the default for later sessions',
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 
-  it('moves an unstarted session to the first available model when its route disappears', async () => {
+  it('goes inert when the route the default names stops being served', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-default-model-blocked'))
     const box = page.locator('textarea[data-input-phase], textarea').first()
     await expect.poll(async () => box.isEnabled(), { timeout: 10_000 }).toBe(true)
@@ -139,24 +139,29 @@ describe('web e2e: the composer model switch is the default for later sessions',
     // stored profile in place.
     await scaffold.ctx.settings.replace(settingsNamespace('llm-pi-ai'), { providers: {} })
 
-    // A blank session has no recorded request/header contract to preserve, so
-    // sessions.models adopts and persists the first route the live catalog can
-    // actually serve instead of leaving the composer stuck on a dead default.
-    await expect.poll(async () => box.isEnabled(), { timeout: 15_000 }).toBe(true)
+    await expect.poll(async () => box.isEnabled(), { timeout: 15_000 }).toBe(false)
+    expect(await box.getAttribute('placeholder')).toBe('当前模型不可用，请先选择模型')
+
+    // The block is an affordance; the refusal is the Host's. A client that
+    // never disabled anything still cannot start a turn on a dead route.
+    const refused = await scaffold.ctx.apiProxy.sessions.prompt({
+      rpcId: 'default-model-refused' as never,
+      payload: {
+        sessionId: SessionId(await createSession('default-model-refusal')),
+        mode: 'queue' as const,
+        content: [{ type: 'text' as const, text: 'hi' }],
+      },
+    })
+    expect(refused.result).toMatchObject({ ok: false, error: { code: 'model-unavailable' } })
+
+    // The way out stays open. Locking the model seat with everything else
+    // would leave the composer asking for the one thing it prevents.
     const seat = page.getByRole('button', { name: /^选择模型/ })
     expect(await seat.isEnabled()).toBe(true)
-    await expect.poll(() => seat.getAttribute('aria-label'), { timeout: 15_000 })
-      .toContain('DeepSeek-V4-Flash')
-
-    const recoveredId = await createSession('default-model-recovered')
-    expect(await currentOf(recoveredId)).toEqual({
-      provider: 'deepseek-official',
-      model: 'deepseek-v4-flash',
-    })
-    await expect.poll(
-      async () => readFile(join(scaffold.harnessHome, 'settings.yaml'), 'utf8'),
-      { timeout: 10_000 },
-    ).toContain('provider: deepseek-official')
+    await seat.click()
+    await page.getByRole('menuitem', { name: /模型/ }).click()
+    await page.getByRole('menuitemradio').first().click()
+    await expect.poll(async () => box.isEnabled(), { timeout: 15_000 }).toBe(true)
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 })

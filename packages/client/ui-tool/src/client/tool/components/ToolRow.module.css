@@ -2,36 +2,13 @@
    [16 leading] gap6 [title 14/24] gap8 [2x2 dot] gap8 [summary FILL truncate]. */
 
 .root {
-  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2);
-  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2);
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 .row {
   position: relative; /* sweep-glare overlay anchor */
   overflow: hidden;
-  box-sizing: border-box;
-  height: 30px;
-  padding: 0 7px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-module-platform);
-  transition:
-    border-color 140ms var(--ds-ease-in-out),
-    background-color 140ms var(--ds-ease-in-out),
-    transform 140ms var(--ds-ease-in-out);
-}
-
-.row:hover,
-.row:focus-visible {
-  border-color: var(--dsw-alias-border-l2);
-  background: var(--dsw-alias-interactive-bg-hover-solid);
-}
-
-.row:active {
-  transform: scale(0.995);
 }
 
 /* Running sweep (deepsuite ShimmerText pattern): a fixed-width glare band —
@@ -84,14 +61,16 @@
 }
 
 .title {
-  color: var(--dsw-alias-label-primary);
-  font-size: 12.5px;
-  line-height: 20px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .sep {
-  display: none;
+  flex: none;
+  width: 2px;
+  height: 2px;
+  border-radius: 1px;
+  margin: 0 8px;
+  background: var(--dsw-alias-label-caption);
 }
 
 .summary {
@@ -100,13 +79,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-left: 8px;
-  padding: 1px 7px;
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-3);
-  font-family: var(--ds-font-family-code);
-  font-size: 11.5px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 24px;
   color: var(--dsw-alias-label-tertiary);
 }
 
@@ -118,13 +92,9 @@
 .summarySuffix {
   flex: none;
   margin-left: 4px;
-  padding: 1px 6px;
-  border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 8px;
   white-space: nowrap;
-  font-family: var(--ds-font-family-code);
-  font-size: 11.5px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 24px;
   color: var(--dsw-alias-label-tertiary);
 }
 
@@ -135,16 +105,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin: 0 0 0 8px;
-  padding: 1px 7px;
+  margin: 0;
+  padding: 0;
   border: none;
-  border-radius: 8px;
-  background: var(--dsw-alias-bg-layer-3);
+  background: none;
   font: inherit;
   text-align: left;
-  font-family: var(--ds-font-family-code);
-  font-size: 11.5px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 24px;
   color: var(--dsw-alias-label-secondary);
   text-decoration: underline;
   text-decoration-color: var(--dsw-alias-label-quaternary);
@@ -162,14 +130,13 @@
   color: var(--dsw-alias-state-error-primary);
 }
 
-/* Expanded body + Inspect control wrapper (sibling of .row: clicks never toggle). */
+/* Expanded body + Inspect pill wrapper (sibling of .row: clicks never toggle). */
 .bodyWrap {
   display: flex;
   flex-direction: column;
-  margin-top: 2px;
 }
 
-/* Hover-revealed jump to the trajectory record: a compact control in real flow
+/* Hover-revealed jump to the trajectory record: a small pill in real flow
    under the expanded body's bottom-left corner (it reserves its line, so
    revealing never shifts layout); revealed by hovering anywhere on the tool
    call — title row included — or by keyboard focus. */
@@ -181,7 +148,7 @@
   margin: 4px 0 2px 4px;
   padding: 2px 8px;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 8px;
+  border-radius: 999px;
   /* Base background, not bg-overlay: the overlay token is a raised dark
      surface and reads too heavy for a quiet in-flow affordance. */
   background: var(--dsw-alias-bg-base);
@@ -221,7 +188,7 @@
   flex-direction: column;
   margin: 4px 0 4px 4px;
   border: 1px solid var(--dsw-alias-border-l1);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--dsw-alias-markdown-code-block);
   font: var(--dsw-font-markdown-code-block-small);
 }

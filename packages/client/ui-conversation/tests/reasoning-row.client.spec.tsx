@@ -117,9 +117,6 @@ describe('ReasoningRow', () => {
     fireEvent.click(view.getByText('Think'))
     expect(view.getAllByText(/Inspect the session/)).toHaveLength(1)
     expect(view.queryByText('IN')).toBeNull()
-    const disclosure = view.getByRole('button').parentElement
-    expect(disclosure?.getAttribute('data-open')).toBe('true')
-    expect(disclosure?.contains(view.getByText(/Check persistence/))).toBe(true)
     expect(view.container.querySelector('[class*="ioCard"]')).toBeNull()
     expect(view.container.querySelector('[class*="thinkBody"]')).not.toBeNull()
   })

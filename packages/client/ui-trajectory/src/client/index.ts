@@ -19,20 +19,6 @@ import { registerTrajectoryConversationView } from './trajectory-snapshot-builde
 import { registerTrajectoryToolDefinition } from './trajectory-tool-definition.ts'
 import { TrajectoryView, type TrajectoryViewInjected } from './TrajectoryView.tsx'
 
-declare module '@deepseek-ai/dsh-client-ui-slots' {
-  interface SlotMap {
-    /** Session-scoped utilities rendered inside the Trajectory toolbar. */
-    'conversation.trajectory.toolbar': {
-      kind: 'list'
-      scope: 'session'
-      owner: TrajectoryToolbarOwnerProps
-    }
-  }
-}
-
-/** The toolbar owns its own layout; contributed utilities need no owner data. */
-export interface TrajectoryToolbarOwnerProps {}
-
 /** Required services: the conversation slot, registries, ordinary Session paging, and the locale service. */
 export const inject = ['slots', 'conversationEvents', 'conversationViews', 'sessions', 'locale']
 
@@ -60,9 +46,6 @@ export function apply(ctx: Context): void {
     order: 10,
     locale: NS,
     label: () => t('view.trajectory'),
-    children: {
-      'conversation.trajectory.toolbar': { kind: 'list', scope: 'session' },
-    },
     inject: (sessionId: SessionId): TrajectoryViewInjected => {
       const session = ctx.sessions.binding(sessionId)?.session
       if (session === undefined) {

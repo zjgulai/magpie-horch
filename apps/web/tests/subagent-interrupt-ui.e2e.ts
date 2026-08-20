@@ -210,11 +210,6 @@ describe.skipIf(MODE === 'record')('web e2e: composer interrupt for a running co
       const send = page.getByRole('button', { name: 'Send message' })
       expect(await send.count()).toBe(1)
       expect(await send.isDisabled()).toBe(true)
-      // The disabled composer can render before the selected child's history
-      // window finishes loading. Snapshot only after the durable initial
-      // prompt arrives; otherwise timing decides between content and the
-      // transient "Loading history…" placeholder.
-      await page.getByText(INITIAL, { exact: true }).waitFor({ timeout: 15_000 })
       await compareOrRefreshGolden(
         OFFLINE_COMPOSER_EXPECTED,
         await captureStableAria(page, '[class*="centerCol"]', scaffold.workspaceCwd),

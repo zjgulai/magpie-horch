@@ -311,14 +311,12 @@ function fixtureModelGroups(): ModelProviderGroup[] {
           id: 'deepseek-v4-flash',
           name: 'DeepSeek-V4-Flash',
           description: '快速响应',
-          inputModalities: ['text'],
           reasoning: DEEPSEEK_REASONING,
         },
         {
           id: 'deepseek-v4-pro',
           name: 'DeepSeek-V4-Pro',
           description: '复杂任务',
-          inputModalities: ['text'],
           reasoning: DEEPSEEK_REASONING,
         },
       ],
@@ -326,7 +324,7 @@ function fixtureModelGroups(): ModelProviderGroup[] {
     {
       id: 'openai',
       name: 'OpenAI',
-      models: [{ id: 'gpt-5', name: 'GPT-5', inputModalities: ['text', 'image'], reasoning: OPENAI_REASONING }],
+      models: [{ id: 'gpt-5', name: 'GPT-5', reasoning: OPENAI_REASONING }],
     },
   ]
 }

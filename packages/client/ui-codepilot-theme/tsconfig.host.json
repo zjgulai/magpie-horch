@@ -3,11 +3,19 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib/types",
-    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
+    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo",
+    "composite": true
   },
-  "files": ["src/index.ts", "src/invariant.ts"],
+  "files": [
+    "src/index.ts",
+    "src/invariant.ts"
+  ],
   "references": [
-    { "path": "../../../vendor/cordis" },
-    { "path": "../../runtime-diagnostics/invariants" }
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    }
   ]
 }
