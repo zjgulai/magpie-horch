@@ -7,7 +7,6 @@
   },
   "files": [
     "src/client/index.ts",
-    "src/client/ScheduleSessionDetail.tsx",
     "src/client/locales.ts",
     "src/types.ts"
   ],

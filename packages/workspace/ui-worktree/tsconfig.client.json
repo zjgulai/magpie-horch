@@ -9,7 +9,6 @@
     "src/client/index.ts",
     "src/client/WorktreePanel.tsx",
     "src/client/WorktreeHeaderToggle.tsx",
-    "src/client/WorktreeSessionDetail.tsx",
     "src/client/controller.ts",
     "src/client/draft.ts",
     "src/client/locales.ts",
