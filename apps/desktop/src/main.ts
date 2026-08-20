@@ -233,6 +233,7 @@ function launchHarness(): Promise<string> {
   const patchPath = join(__dirname, 'pilot-harness.patch.yml')
   const generation = ++launchGeneration
   const child = spawn(process.execPath, [
+    '--expose-internals',
     entry,
     'web',
     '--patch',
