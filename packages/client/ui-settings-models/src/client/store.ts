@@ -1,18 +1,18 @@
 /**
  * Models settings page store: one snapshot joining the configurable-provider
- * directory (`llm.providers`), the settings namespaces (`settings.describe`),
+ * directory (`llm.providers`), the settings namespaces (shared settings mirror),
  * and the referenced credentials (`credentials.describe`). The host stays the
  * single fact source — every mutation writes through the wire and the page
  * re-renders from the next describe, pushed or refetched.
  */
 
 import type {
-  ConfigurableProviderView, CredentialView, IApiClient, ModelCatalogFailure,
-  ModelProviderGroup, ModelSelection, SettingsNamespaceView,
+  ConfigurableProviderView, CredentialView, IApiClient, SettingsNamespaceView,
 } from '@deepseek-ai/dsh-api-remotes/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-runtime/client'
-import { getPath, hasPath, nodeAtPath, rehydrateSchema } from '@deepseek-ai/dsh-client-schema-form'
+import type { SettingsDescribeFace } from '@deepseek-ai/dsh-client-ui-settings/client'
+import type { SettingsSchemaOperations } from './schema-operations.ts'
 
 /**
  * Any route key walks a dict schema to the same profile node, so the lookup
@@ -41,20 +41,12 @@ export interface ModelsSettingsState {
   error: string | null
   /** Credential enrichment failure; provider/settings rows remain usable. */
   credentialError: string | null
-  /** Model-catalog enrichment failure; provider management remains usable. */
-  catalogError: string | null
   /** Whether the settings provider accepts writes. */
   writable: boolean
   /** Every configurable provider joined with its configured/credential state. */
   rows: readonly ProviderRow[]
   /** Namespace views by ns, for the editor's schema/layers/secrets. */
   namespaces: ReadonlyMap<string, SettingsNamespaceView>
-  /** Active providers and the exact model catalog each adapter currently serves. */
-  groups: readonly ModelProviderGroup[]
-  /** Provider-local catalog failures, without suppressing successful groups. */
-  catalogFailures: readonly ModelCatalogFailure[]
-  /** Default route for new sessions, resolved from the shared settings namespace. */
-  defaultModel: ModelSelection | undefined
 }
 
 /**
@@ -85,20 +77,28 @@ export function deriveKeyRef(provider: string): string {
  * the choices the page offers cannot drift from the ones the adapter accepts:
  * both come from the same `Config`.
  * @param namespace - the namespace view whose schema declares the profile shape.
+ * @param schema - settings schema operations.
  * @returns the protocol identifiers, or an empty list when the schema has none.
  */
-export function protocolChoices(namespace: SettingsNamespaceView | undefined): string[] {
+export function protocolChoices(
+  namespace: SettingsNamespaceView | undefined,
+  schema: SettingsSchemaOperations,
+): string[] {
   if (namespace === undefined) return []
-  const node = nodeAtPath(rehydrateSchema(namespace.schema), ['providers', PROBE_ROUTE, 'api'])
+  const node = schema.nodeAtPath(schema.rehydrate(namespace.schema), ['providers', PROBE_ROUTE, 'api'])
   const list = (node as { type?: string; list?: readonly { value?: unknown }[] } | undefined)
   if (list?.type !== 'union' || list.list === undefined) return []
   return list.list.map(entry => entry.value).filter((value): value is string => typeof value === 'string')
 }
 
 /** The credential reference a resolved profile names (its `apiKeyEnv` field). */
-function apiKeyEnvOf(namespace: SettingsNamespaceView | undefined, path: readonly string[]): string | undefined {
+function apiKeyEnvOf(
+  namespace: SettingsNamespaceView | undefined,
+  path: readonly string[],
+  schema: SettingsSchemaOperations,
+): string | undefined {
   if (namespace === undefined) return undefined
-  const profile = getPath(namespace.value, path)
+  const profile = schema.getPath(namespace.value, path)
   if (typeof profile !== 'object' || profile === null) return undefined
   const ref = (profile as { apiKeyEnv?: unknown }).apiKeyEnv
   return typeof ref === 'string' && ref.length > 0 ? ref : undefined
@@ -108,22 +108,28 @@ function apiKeyEnvOf(namespace: SettingsNamespaceView | undefined, path: readonl
 export class ModelsSettingsStore {
   /** The snapshot the section renders from (uSES-safe store). */
   readonly store: SnapshotStore<ModelsSettingsState> = createSnapshotStore<ModelsSettingsState>({
-    status: 'idle', error: null, credentialError: null, catalogError: null,
-    writable: false, rows: [], namespaces: new Map(), groups: [], catalogFailures: [], defaultModel: undefined,
+    status: 'idle', error: null, credentialError: null, writable: false, rows: [], namespaces: new Map(),
   })
 
   /** Latest load wins; an older response never overwrites a newer one. */
   private generation = 0
 
   /**
-   * @param api - the wire face (settings/credentials/llm domains).
+   * @param api - the wire face (credentials/llm domains, and settings writes).
+   * @param describeFace - the shared mirror's describe face (namespace views and writability).
    */
-  constructor(private readonly api: Pick<IApiClient, 'settings' | 'credentials' | 'llm'>) {}
+  constructor(
+    private readonly api: Pick<IApiClient, 'settings' | 'credentials' | 'llm'>,
+    private readonly schema: SettingsSchemaOperations,
+    private readonly describeFace: SettingsDescribeFace,
+  ) {}
 
   /**
-   * Refresh the whole page snapshot: directory and namespaces in parallel,
-   * then one batched credential describe over every referenced ref. A
-   * failure keeps the last good rows and surfaces the error.
+   * Refresh the whole page snapshot: the provider directory and the mirror's
+   * settings answer in parallel, then one batched credential describe over
+   * every referenced ref. Provider failure or absence of an initial settings
+   * answer keeps the last good rows and surfaces an error; a failed settings
+   * refresh reuses the mirror's held view.
    * @returns nothing; the snapshot carries the outcome.
    */
   async load(): Promise<void> {
@@ -131,31 +137,20 @@ export class ModelsSettingsStore {
     this.store.update((s) => { s.status = 'loading'; s.error = null })
     let providers: ConfigurableProviderView[]
     let writable: boolean
-    let views: SettingsNamespaceView[]
-    let groups: ModelProviderGroup[] = []
-    let catalogFailures: ModelCatalogFailure[] = []
-    let catalogError: string | null = null
+    let views: readonly SettingsNamespaceView[]
     try {
-      const catalogRequest = typeof this.api.llm.models === 'function'
-        ? this.api.llm.models({})
-          .then(response => response.result.ok
-            ? { groups: response.result.value.groups, failures: response.result.value.failures, error: null }
-            : { groups: [], failures: [], error: response.result.error.message })
-          .catch(error => ({ groups: [], failures: [], error: messageOf(error) }))
-        : Promise.resolve({ groups: [], failures: [], error: null })
-      const [providersResponse, settingsResponse, catalogResult] = await Promise.all([
+      const [providersResponse] = await Promise.all([
         this.api.llm.providers({}),
-        this.api.settings.describe({}),
-        catalogRequest,
+        this.describeFace.ensure(),
       ])
       if (!providersResponse.result.ok) throw new Error(providersResponse.result.error.message)
-      if (!settingsResponse.result.ok) throw new Error(settingsResponse.result.error.message)
+      const mirrored = this.describeFace.getSnapshot()
+      if (mirrored.view === undefined) {
+        throw new Error(mirrored.error ?? 'settings are unavailable in this browser')
+      }
       providers = providersResponse.result.value.providers
-      writable = settingsResponse.result.value.writable
-      views = settingsResponse.result.value.namespaces
-      groups = catalogResult.groups
-      catalogFailures = catalogResult.failures
-      catalogError = catalogResult.error
+      writable = mirrored.view.writable
+      views = mirrored.view.namespaces
     } catch (error) {
       if (generation !== this.generation) return
       this.store.update((s) => {
@@ -165,30 +160,19 @@ export class ModelsSettingsStore {
       return
     }
     const namespaces = new Map(views.map(view => [view.ns, view]))
-    const defaultNamespace = namespaces.get('agent-default-model')
-    const defaultProvider = defaultNamespace === undefined ? undefined : getPath(defaultNamespace.value, ['provider'])
-    const defaultModelId = defaultNamespace === undefined ? undefined : getPath(defaultNamespace.value, ['model'])
-    const defaultReasoning = defaultNamespace === undefined ? undefined : getPath(defaultNamespace.value, ['reasoningEffort'])
-    const defaultModel = typeof defaultProvider === 'string' && typeof defaultModelId === 'string'
-      ? {
-        provider: defaultProvider,
-        model: defaultModelId,
-        ...typeof defaultReasoning === 'string' ? { reasoningEffort: defaultReasoning } : {},
-      }
-      : undefined
     const rows: ProviderRow[] = providers.map((entry) => {
       const namespace = namespaces.get(entry.settingsNs)
       const configured = namespace !== undefined
-        && (entry.settingsPath.length === 0 || getPath(namespace.value, entry.settingsPath) !== undefined)
+        && (entry.settingsPath.length === 0 || this.schema.getPath(namespace.value, entry.settingsPath) !== undefined)
       const removable = namespace !== undefined
         && entry.settingsPath.length > 0
-        && hasPath(namespace.user, entry.settingsPath)
-        && !hasPath(namespace.base, entry.settingsPath)
+        && this.schema.hasPath(namespace.user, entry.settingsPath)
+        && !this.schema.hasPath(namespace.base, entry.settingsPath)
       return {
         entry,
         configured,
         removable,
-        apiKeyEnv: apiKeyEnvOf(namespace, entry.settingsPath),
+        apiKeyEnv: apiKeyEnvOf(namespace, entry.settingsPath, this.schema),
         credential: undefined,
       }
     })
@@ -212,7 +196,6 @@ export class ModelsSettingsStore {
       s.status = 'ready'
       s.error = null
       s.credentialError = credentialError
-      s.catalogError = catalogError
       s.writable = writable
       s.rows = rows.map(row => ({
         ...row,
@@ -221,9 +204,6 @@ export class ModelsSettingsStore {
           : {},
       }))
       s.namespaces = namespaces
-      s.groups = groups
-      s.catalogFailures = catalogFailures
-      s.defaultModel = defaultModel
     })
   }
 }
@@ -244,18 +224,29 @@ export function providerUsable(row: ProviderRow): boolean {
   return row.credential?.configured === true
 }
 
-/** First-run provider guidance derived only from the shared Models join. */
+/** First-run onboarding readiness derived only from the shared Models join. */
 export type OnboardingReadiness =
   | { kind: 'loading' }
+  | { kind: 'adapter-absent' }
   | { kind: 'provider-ready' }
-  | { kind: 'setup-required' }
-  | { kind: 'unavailable' }
+  | { kind: 'credential-missing' }
+  | {
+    kind: 'unavailable'
+    reason:
+      | 'load-failed'
+      | 'provider-inactive'
+      | 'credentials-unavailable'
+      | 'settings-read-only'
+      | 'credential-read-only'
+  }
 
 /**
  * Project first-run readiness from the provider/settings/credential join used
- * by the Models page. Any usable provider ends the step. Otherwise a writable
- * settings surface can guide the user to the provider page without assuming a
- * particular vendor, credential shape, or bundled adapter.
+ * by the Models page. The step exists to leave the user with a model to talk
+ * to, so ANY usable provider ends it; only when none exists does the official
+ * DeepSeek route — the one route the prompt can offer a key field for — decide
+ * whether prompting can help. A missing official configurable-provider
+ * declaration means the adapter is not repairable by navigating to Models.
  * @param state - current shared Models join snapshot.
  * @returns the onboarding state without reading a parallel fact source.
  */
@@ -263,8 +254,43 @@ export function onboardingReadiness(state: ModelsSettingsState): OnboardingReadi
   if ((state.status === 'idle' || state.status === 'loading') && state.rows.length === 0) {
     return { kind: 'loading' }
   }
-  if (state.status === 'error') return { kind: 'unavailable' }
+  if (state.status === 'error') {
+    return {
+      kind: 'unavailable',
+      reason: 'load-failed',
+    }
+  }
   if (state.rows.some(providerUsable)) return { kind: 'provider-ready' }
-  if (!state.writable) return { kind: 'unavailable' }
-  return { kind: 'setup-required' }
+  const row = state.rows.find(candidate =>
+    candidate.entry.provider === 'deepseek-official'
+    && candidate.entry.settingsNs === 'llm-deepseek'
+    && candidate.entry.settingsPath.length === 0)
+  if (row === undefined) return { kind: 'adapter-absent' }
+  if (!row.entry.active) {
+    return {
+      kind: 'unavailable',
+      reason: 'provider-inactive',
+    }
+  }
+  // Past the usable gate an active route names a reference it has no stored
+  // credential for, so the remaining questions are all about that credential.
+  if (state.credentialError !== null || row.credential === undefined) {
+    return {
+      kind: 'unavailable',
+      reason: 'credentials-unavailable',
+    }
+  }
+  if (!state.writable) {
+    return {
+      kind: 'unavailable',
+      reason: 'settings-read-only',
+    }
+  }
+  if (!row.credential.writable) {
+    return {
+      kind: 'unavailable',
+      reason: 'credential-read-only',
+    }
+  }
+  return { kind: 'credential-missing' }
 }

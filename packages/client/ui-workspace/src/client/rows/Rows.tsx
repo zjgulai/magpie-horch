@@ -6,13 +6,15 @@
  * and workspace hover cards are suppressed while a menu is open.
  */
 import { useState } from 'react'
-import type { ReactNode } from 'react'
 import clsx from 'clsx'
 import {
-  CodePilotIcon, HoverCard, IconTriangleRightFill14, Menu, StateDot,
+  HoverCard, IconArchiveOutline20, IconBranchOutline16, IconEditOutline16,
+  IconEllipsisOutline16, IconFolderClose16, IconFolderOpen16, IconPlusOutline16,
+  IconTrashOutline16, IconTriangleRightFill14, Menu, StateDot,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { StateDotState } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { SessionDetailOwnerProps, WorkspaceBrowserProps } from '../contract/slots.ts'
+import { abbreviateHomePath } from '@deepseek-ai/dsh-client-runtime/client'
+import type { WorkspaceBrowserProps } from '../contract/slots.ts'
 import type { GroupNode, SearchResultNode, SessionNode } from '../tree.ts'
 import { relativeTime } from '../tree.ts'
 import css from './Rows.module.css'
@@ -49,7 +51,7 @@ function createdLabel(createdAt: number, t: RowTranslate): string {
   return t('hover.created', { time: `${date} ${pad2(d.getHours())}:${pad2(d.getMinutes())}` })
 }
 
-/** Hover-card body: workspace title, full directory path, absolute creation time. */
+/** Hover-card body: workspace title, display directory path, absolute creation time. */
 function WorkspaceHoverContent({ label, cwd, createdAt, t }: {
   label: string
   cwd: string | undefined
@@ -103,10 +105,11 @@ function rowHalf(e: { clientY: number; currentTarget: HTMLElement }): 'before' |
  * @param props.onToggle - expand/collapse the group.
  * @param props.onCreate - start a frontend Session inside this Workspace.
  * @param props.drag - optional workspace-row drag wiring.
+ * @param props.home - host account home for POSIX hover-path abbreviation.
  * @param props.t - the browser root's locale seat.
  * @returns the row element.
  */
-export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, t }: {
+export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, home, t }: {
   group: GroupNode
   onToggle: () => void
   onCreate: () => void
@@ -114,36 +117,25 @@ export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, t }: 
   actions?: { rename: () => void; delete: () => void } | undefined
   /** Present only for real Workspace rows in the grouped view. */
   drag?: WorkspaceRowDragProps | undefined
+  /** Host account home; POSIX home-rooted hover paths display as `~`. */
+  home?: string | undefined
   t: RowTranslate
 }) {
   const row = group
   // The ungrouped bucket has no workspace title: its label is dictionary copy.
   const label = row.workspaceId === undefined ? t('group.ungrouped') : row.label
+  const active = group.expanded && group.containsCurrent
   const [menuOpen, setMenuOpen] = useState(false)
   const workspaceMenuItems = [
-    { id: 'rename', label: t('rename'), icon: <CodePilotIcon name="edit" size={16} /> },
-    { id: 'delete', label: t('delete.workspace'), icon: <CodePilotIcon name="delete" size={16} />, danger: true },
+    { id: 'rename', label: t('rename'), icon: <IconEditOutline16 /> },
+    { id: 'delete', label: t('delete.workspace'), icon: <IconTrashOutline16 />, danger: true },
   ]
-  const activateOrToggle = (): void => {
-    // The desktop shell follows CodePilot's project-list convention: clicking
-    // an inactive project activates it. The browser composition keeps the
-    // tree convention (click toggles expansion), and the explicit + action is
-    // unchanged on both surfaces.
-    const desktop = document.documentElement.hasAttribute('data-pilot-desktop')
-    if (desktop && row.workspaceId !== undefined && !row.containsCurrent) {
-      onCreate()
-      return
-    }
-    onToggle()
-  }
   const ownRow = (
     <div
       className={clsx(css.projectRow, menuOpen && css.menuOpen)}
-      data-pilot-workspace-row="project"
       role="treeitem"
       aria-expanded={row.expanded}
-      aria-current={row.containsCurrent ? 'true' : undefined}
-      onClick={activateOrToggle}
+      onClick={onToggle}
       draggable={drag !== undefined}
       onDragStart={drag === undefined
         ? undefined
@@ -154,10 +146,8 @@ export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, t }: 
         }}
       onDragEnd={drag?.end}
     >
-      <span className={clsx(css.slot, css.folder)}>
-        {row.expanded
-          ? <CodePilotIcon name="folder_open" size={16} />
-          : <CodePilotIcon name="folder" size={16} />}
+      <span className={clsx(css.slot, css.folder, active && css.folderActive)}>
+        {row.expanded ? <IconFolderOpen16 /> : <IconFolderClose16 />}
       </span>
       <span className={clsx(css.slot, css.chevron)}>
         <IconTriangleRightFill14 className={clsx(css.arrow, row.expanded && css.arrowOpen)} />
@@ -189,7 +179,7 @@ export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, t }: 
                 aria-label={t('actions.workspace.aria', { name: label })}
                 onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v) }}
               >
-                <CodePilotIcon name="more" size={16} />
+                <IconEllipsisOutline16 />
               </button>
             )}
           />
@@ -200,7 +190,7 @@ export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, t }: 
           aria-label={t('actions.newSession.aria', { name: label })}
           onClick={(e) => { e.stopPropagation(); onCreate() }}
         >
-          <CodePilotIcon name="plus" size={16} />
+          <IconPlusOutline16 />
         </button>
       </span>
     </div>
@@ -210,7 +200,12 @@ export function ProjectRowItem({ group, onToggle, onCreate, actions, drag, t }: 
   return (
     <HoverCard
       anchor={ownRow}
-      content={<WorkspaceHoverContent label={row.label} cwd={row.cwd} createdAt={row.createdAt} t={t} />}
+      content={<WorkspaceHoverContent
+        label={row.label}
+        cwd={row.cwd === undefined ? undefined : abbreviateHomePath(row.cwd, home)}
+        createdAt={row.createdAt}
+        t={t}
+      />}
       disabled={menuOpen}
       copyText={row.cwd}
       copyLabel={t('copy')}
@@ -285,49 +280,21 @@ function SessionStatusDots({ statuses }: { statuses: readonly [SessionStatus, ..
   )
 }
 
-const DETAIL_ICONS: SessionDetailOwnerProps['detailStyle']['iconNames'] = {
-  branch: 'git',
-  model: 'model',
-  reminder: 'clock',
-}
-
-/** Hover-card body: work context, plugin details, relative time, and live status. */
-function SessionHoverContent({ node, now, details, t }: {
-  node: SessionNode
-  now: number
-  details: ReactNode
-  t: RowTranslate
-}) {
+/** Hover-card body: full title, relative time, and every relevant live status. */
+function SessionHoverContent({ node, now, t }: { node: SessionNode; now: number; t: RowTranslate }) {
   const statuses = sessionStatuses(node, t)
-  const workspaceTitle = node.workspaceTitle ?? t('group.ungrouped')
   return (
     <div className={css.hoverContent}>
       <div className={css.hoverTitle}>{displayTitle(node, t)}</div>
-      <div className={css.hoverSummary}>
-        {/* Same placeholder rule as the row's trailing cell: no timestamp
-            before the first prompt. */}
-        {!node.blank && <span className={css.hoverTime}>{hoverTimeLabel(node.updatedAt, now, t)}</span>}
-        {statuses.map(status => (
-          <span className={css.hoverStatus} key={status.label}>
-            <StateDot state={status.state} />
-            <span>{status.label}</span>
-          </span>
-        ))}
-      </div>
-      <div className={css.hoverDetail} title={`${t('hover.workspace')}: ${workspaceTitle}`}>
-        <CodePilotIcon name="folder" size={14} />
-        <span className={css.hoverDetailLabel}>{t('hover.workspace')}</span>
-        <span className={css.hoverDetailValue}>{workspaceTitle}</span>
-      </div>
-      {node.cwd !== undefined && <div className={css.hoverPath}>{node.cwd}</div>}
-      {node.agentPreset !== undefined && (
-        <div className={css.hoverDetail} title={`${t('hover.mode')}: ${node.agentPreset}`}>
-          <CodePilotIcon name="assistant" size={14} />
-          <span className={css.hoverDetailLabel}>{t('hover.mode')}</span>
-          <span className={css.hoverDetailValue}>{node.agentPreset}</span>
+      {/* Same placeholder rule as the row's trailing cell: no timestamp
+          before the first prompt. */}
+      {!node.blank && <div className={css.hoverTime}>{hoverTimeLabel(node.updatedAt, now, t)}</div>}
+      {statuses.map(status => (
+        <div className={css.hoverStatus} key={status.label}>
+          <StateDot state={status.state} />
+          <span>{status.label}</span>
         </div>
-      )}
-      {details}
+      ))}
     </div>
   )
 }
@@ -355,8 +322,6 @@ export function SearchResultItem({ result, currentId, onOpen, t }: {
     <button
       type="button"
       className={clsx(css.searchResultRow, selected && css.selected)}
-      data-pilot-workspace-row="search-result"
-      data-selected={selected || undefined}
       role="treeitem"
       aria-selected={selected}
       onClick={() => { onOpen(result.id) }}
@@ -394,7 +359,7 @@ export function SearchResultItem({ result, currentId, onOpen, t }: {
  * @param props.t - the browser root's locale seat.
  * @returns the session row.
  */
-export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork, onArchive, renderDetails, drag, flat = false, t }: {
+export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork, onArchive, drag, flat = false, t }: {
   node: SessionNode
   currentId: string | undefined
   now: number
@@ -405,8 +370,6 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
   onFork: (id: SessionNode['id']) => void
   /** Archive this session (row menu action; commits without a dialog). */
   onArchive: (id: SessionNode['id']) => void
-  /** Render optional domain details through the Workspace browser's child slot. */
-  renderDetails?: ((owner: SessionDetailOwnerProps) => ReactNode) | undefined
   /** Present only on draggable rows (workspace-group sessions outside search). */
   drag?: RowDragProps | undefined
   /** The row is rendered without a parent Workspace header. */
@@ -420,27 +383,14 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
   const primaryStatus = statuses[0]
   const showStatus = primaryStatus.state !== 'done' || row.completed
   const [menuOpen, setMenuOpen] = useState(false)
-  const details = renderDetails?.({
-    sessionId: node.id,
-    ...(node.workspaceId === undefined ? {} : { workspaceId: node.workspaceId }),
-    workspaceTitle: node.workspaceTitle ?? t('group.ungrouped'),
-    ...(node.cwd === undefined ? {} : { cwd: node.cwd }),
-    projections: node.projections ?? {},
-    detailStyle: {
-      rowClassName: css.hoverDetail,
-      labelClassName: css.hoverDetailLabel,
-      valueClassName: css.hoverDetailValue,
-      iconNames: DETAIL_ICONS,
-    },
-  })
   // Archive hides the row through the registry-global archive set and never
   // touches the session log, so it is not styled as destructive and needs no
   // confirmation dialog.
   const sessionMenuItems = [
-    { id: 'rename', label: t('rename'), icon: <CodePilotIcon name="edit" size={16} /> },
-    { id: 'fork', label: t('menu.fork'), icon: <CodePilotIcon name="git" size={16} /> },
+    { id: 'rename', label: t('rename'), icon: <IconEditOutline16 /> },
+    { id: 'fork', label: t('menu.fork'), icon: <IconBranchOutline16 /> },
     // 20-native glyph in the menu's 16px icon slot (Menu.module.css .itemIcon).
-    { id: 'archive', label: t('menu.archiveSession'), icon: <CodePilotIcon name="archive" size={16} /> },
+    { id: 'archive', label: t('menu.archiveSession'), icon: <IconArchiveOutline20 size={16} /> },
   ]
   // Figma session cell: pad 8, status slot 16, then a 4px title gap.
   const ownRow = (
@@ -450,8 +400,6 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
         flat && !showStatus && css.flatSessionRowWithoutStatus,
         drag?.marker === 'before' && css.dropBefore, drag?.marker === 'after' && css.dropAfter,
       )}
-      data-pilot-workspace-row="session"
-      data-selected={selected || undefined}
       role="treeitem"
       aria-selected={selected}
       onClick={() => { onOpen(node.id) }}
@@ -515,7 +463,7 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
                 aria-label={t('actions.session.aria', { name: title })}
                 onClick={(e) => { e.stopPropagation(); setMenuOpen(v => !v) }}
               >
-                <CodePilotIcon name="more" size={16} />
+                <IconEllipsisOutline16 />
               </button>
             )}
           />
@@ -526,7 +474,7 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
   return (
     <HoverCard
       anchor={ownRow}
-      content={<SessionHoverContent node={node} now={now} details={details} t={t} />}
+      content={<SessionHoverContent node={node} now={now} t={t} />}
       disabled={menuOpen || drag?.active === true}
       copyText={row.blank ? undefined : row.title}
       copyLabel={t('copy')}

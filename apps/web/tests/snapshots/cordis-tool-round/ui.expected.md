@@ -3,6 +3,9 @@
     - button "Use only Cordis tools. First" [disabled]
   - img
   - text: Standard mode
+  - button "Session log":
+    - text: Session log
+    - img
   - tablist:
     - tab "Chat" [selected]
     - tab "Trajectory"
@@ -15,12 +18,14 @@
   - text: Context injection @deepseek-ai/dsh-system-prompt
 - button "Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package.":
   - img
+  - img
   - text: Think I will inspect the current Session's dynamic Cordis Plugins before defining the snapshot Package.
 - 'button "Tool call cordis_inspect_self · {}"':
   - img
   - img
   - text: "Tool call cordis_inspect_self · {}"
 - button "Think No dynamic Plugins are present, so I will define the requested Host and Client Package.":
+  - img
   - img
   - text: Think No dynamic Plugins are present, so I will define the requested Host and Client Package.
 - button "Register Cordis Plugin snapshot noop does nothing, for the snapshot Ready" [expanded]:
@@ -37,12 +42,14 @@
 - button "Inspect"
 - button "Think The Host returned snap-1/pkg-1, so I will request its first activation.":
   - img
+  - img
   - text: Think The Host returned snap-1/pkg-1, so I will request its first activation.
 - img
 - text: Run Cordis Plugin snap-1 · pkg-1 Ready
 - button "Inspect"
 - text: snap-1/pkg-1 is awaiting user approval (run-1).
 - button "Think The activation request has been submitted, so I will return the requested readiness marker.":
+  - img
   - img
   - text: Think The activation request has been submitted, so I will return the requested readiness marker.
 - paragraph: CORDIS_UI_READY
@@ -59,6 +66,18 @@
   - img
   - img
   - text: Context injection cordis-host-runner
+- paragraph: The Cordis Plugin is running.
+- button "Copy":
+  - img
+- button "Good response":
+  - img
+- button "Bad response":
+  - img
+- button "Branch into a new conversation":
+  - img
+- text: {{clock}} Ran for {{duration}} Use only Cordis tools. Call cordis_stop with pluginId "snap-1". After it succeeds, reply exactly CORDIS_UI_DONE and stop. {{clock}}
+- button "Copy":
+  - img
 - img
 - text: Stop Cordis Plugin snap-1
 - button "Inspect"
@@ -72,19 +91,14 @@
   - img
 - button "Branch into a new conversation":
   - img
-- text: {{clock}} Ran for {{duration}} Use only Cordis tools. Call cordis_stop with pluginId "snap-1". After it succeeds, reply exactly CORDIS_UI_DONE and stop. {{clock}}
-- button "Copy":
-  - img
-- status:
-  - text: "This turn failedllm-replay: script exhausted — session requested model call #7 but its script has only 6; re-record the scenario"
-  - code: UNKNOWN
-- button "Back to bottom":
-  - img
+- text: {{clock}} Ran for {{duration}}
 - textbox "Message the agent"
-- button "Commands"
+- button "Commands":
+  - img
 - 'button "Access mode, current: Workspace Write"': Workspace Write
 - button "Select model, current DeepSeek-V4-Flash":
   - text: DeepSeek-V4-Flash
   - img
-- button "0% of context used": 0%
+- button "0% of context used"
 - button "Send message" [disabled]
+- text: 3 turns · 7 steps LLM {{duration}} · Tool call {{duration}} Cache hit 77% Input 66.5K tok · Output 321 tok

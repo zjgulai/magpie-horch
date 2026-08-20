@@ -10,18 +10,16 @@
  * (same package — direct composition, no slot between them).
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
 import clsx from 'clsx'
 import {
-  Button, CodePilotIcon, IconCloseFill14,
-  Menu, Modal, Tooltip,
+  Button, IconCloseFill14, IconPersonalizationOutline16,
+  IconProjectAddOutline16, IconSearchOutline16, Menu, Modal, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type {
   SessionId, SessionListState, SessionSearchResultItem, WorkspaceId, WorkspaceView,
 } from '@deepseek-ai/dsh-client-runtime/client'
 import type { WorkspaceBrowserProps } from './contract/slots.ts'
 import type { SessionNode, SessionOrderBy } from './tree.ts'
-import type { SessionDetailOwnerProps } from './contract/slots.ts'
 import { deriveFlat, deriveGroups, deriveSearchResults, UNGROUPED_KEY } from './tree.ts'
 import { ProjectRowItem, SearchResultItem, SessionNodeItem } from './rows/Rows.tsx'
 import { FLAT_SESSION_ORDER_KEY } from './stores.ts'
@@ -186,7 +184,7 @@ function ViewOptionsMenu({ groupBy, orderBy, onGroupPick, onOrderPick, t }: {
             aria-label={t('viewOptions.label')}
             onClick={() => { setOpen(v => !v) }}
           >
-            <CodePilotIcon name="filter" size={16} />
+            <IconPersonalizationOutline16 />
           </button>
         </Tooltip>
       )}
@@ -220,6 +218,8 @@ type SessionTreeProps = Pick<
   'useSessions' | 'startSession' | 'open' | 'forkSession'
   | 'insertWorkspaceBefore' | 'insertSessionBefore' | 't'
 > & {
+  /** Host account home for POSIX hover-path abbreviation. */
+  home?: string | undefined
   workspaces: readonly WorkspaceView[]
   /** Explicit persisted zero-or-five-session state by Workspace group. */
   groupExpansion: Readonly<Record<string, boolean>>
@@ -245,8 +245,6 @@ type SessionTreeProps = Pick<
   onSessionArchive: (sessionId: SessionNode['id']) => void
   /** Session order behavior: fixed after edits, or additionally promoted by user activity. */
   orderBy: SessionOrderBy
-  /** Render plugin-contributed hover facts for one session occurrence. */
-  renderSessionDetails: (owner: SessionDetailOwnerProps) => ReactNode
 }
 
 /** The scrolling session tree; unmounting drops the sessions subscription and expand-all state. */
@@ -255,8 +253,7 @@ function SessionTree({
   onRenameRequest, onDeleteRequest, onSessionRename, onSessionArchive,
   insertWorkspaceBefore, insertSessionBefore, orderBy,
   groupExpansion, setGroupExpanded,
-  sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t,
-  renderSessionDetails,
+  sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, home, t,
 }: SessionTreeProps) {
   const list = useSessions(s => s)
   const current = list.current
@@ -455,6 +452,7 @@ function SessionTree({
             >
               <ProjectRowItem
                 group={group}
+                home={home}
                 t={t}
                 onToggle={() => {
                   if (group.expanded) {
@@ -521,7 +519,6 @@ function SessionTree({
                     onRename={onSessionRename}
                     onFork={forkSession}
                     onArchive={onSessionArchive}
-                    renderDetails={renderSessionDetails}
                     drag={dragProps}
                     t={t}
                   />
@@ -552,7 +549,6 @@ function SessionTree({
 function FlatList({
   useSessions, open, forkSession, onSessionRename, onSessionArchive, archivedSessionIds,
   orderBy, sessionOrderByAccount, sessionUpdatedAtByAccount, syncSessionOrderAccount, setSessionOrder, t,
-  renderSessionDetails, workspaces,
 }: Pick<
   SessionTreeProps,
   | 'useSessions'
@@ -566,14 +562,12 @@ function FlatList({
   | 'sessionUpdatedAtByAccount'
   | 'syncSessionOrderAccount'
   | 'setSessionOrder'
-  | 'renderSessionDetails'
-  | 'workspaces'
   | 't'
 >) {
   const list = useSessions(s => s)
   const baseRows = useMemo(
-    () => deriveFlat(list, archivedSessionIds, workspaces),
-    [list, archivedSessionIds, workspaces],
+    () => deriveFlat(list, archivedSessionIds),
+    [list, archivedSessionIds],
   )
   const sessionIds = useMemo(() => baseRows.map(row => row.id), [baseRows])
   const previousOrderBy = useRef(orderBy)
@@ -641,7 +635,6 @@ function FlatList({
               onRename={onSessionRename}
               onFork={forkSession}
               onArchive={onSessionArchive}
-              renderDetails={renderSessionDetails}
               flat
               drag={{
                 start: () => {
@@ -768,9 +761,11 @@ export function WorkspaceBrowser({
   searchSessions,
   searchResultLimit,
   useDirectoryFlow,
+  useHostDescription,
   renderSlot,
   t,
 }: WorkspaceBrowserProps) {
+  const home = useHostDescription(description => description?.home)
   const workspaces = useWorkspaces(state => state.items)
   const workspacePhase = useWorkspaces(state => state.phase)
   const archivedSessionIds = useWorkspaces(state => state.archivedSessionIds)
@@ -827,8 +822,13 @@ export function WorkspaceBrowser({
     searchInput.current?.focus({ preventScroll: true })
   }, [wide, searchExpanded, searchOnExpand])
 
+  // Outside-click dismissal stays off while the rail gesture is in flight
+  // (searchOnExpand): the rail click flips the shell wide and mounts this
+  // listener during its own dispatch, then keeps bubbling to document with
+  // the now-unmounted rail button as its target — outside searchRoot, so the
+  // listener would dismiss the search that click just opened.
   useEffect(() => {
-    if (!wide || !searchExpanded) return
+    if (!wide || !searchExpanded || searchOnExpand) return
     const onClick = (event: MouseEvent): void => {
       if (!(event.target instanceof Node) || searchRoot.current?.contains(event.target) === true) return
       searchInput.current?.blur()
@@ -837,7 +837,7 @@ export function WorkspaceBrowser({
     }
     document.addEventListener('click', onClick)
     return () => { document.removeEventListener('click', onClick) }
-  }, [normalizedQuery, wide, searchExpanded])
+  }, [normalizedQuery, wide, searchExpanded, searchOnExpand])
 
   useEffect(() => {
     if (normalizedQuery === '') {
@@ -983,13 +983,10 @@ export function WorkspaceBrowser({
   }
 
   return (
-    <div className={clsx(css.root, !wide && css.rail)} data-pilot-workspaces={wide ? 'wide' : 'rail'}>
-      <div className={css.sectionHeader} data-pilot-workspaces-header>
+    <div className={clsx(css.root, !wide && css.rail)}>
+      <div className={css.sectionHeader}>
         {wide && (
-          <span
-            className={clsx(css.sectionLabel, css.wide, searchExpanded && css.sectionLabelHidden)}
-            data-pilot-workspaces-label
-          >
+          <span className={clsx(css.sectionLabel, css.wide, searchExpanded && css.sectionLabelHidden)}>
             {groupBy === 'flat' ? t('section.sessions') : t('section.workspaces')}
           </span>
         )}
@@ -998,7 +995,6 @@ export function WorkspaceBrowser({
             <div
               ref={searchRoot}
               className={clsx(css.search, searchExpanded && css.searchExpanded)}
-              data-pilot-workspaces-search={searchExpanded ? 'expanded' : 'collapsed'}
               onClick={() => {
                 setWsPickerOpen(false)
                 setSearchExpanded(true)
@@ -1009,7 +1005,6 @@ export function WorkspaceBrowser({
                 <button
                   type="button"
                   className={css.searchButton}
-                  data-pilot-workspaces-search-button
                   aria-label={t('search.sessions.aria')}
                   aria-expanded={searchExpanded}
                   onClick={() => {
@@ -1017,7 +1012,7 @@ export function WorkspaceBrowser({
                     setSearchExpanded(true)
                   }}
                 >
-                  <CodePilotIcon name="search" size={searchExpanded ? 11 : 14} />
+                  <IconSearchOutline16 size={searchExpanded ? 11 : 14} />
                 </button>
               </Tooltip>
               <input
@@ -1071,13 +1066,12 @@ export function WorkspaceBrowser({
                 ref={wsPlusRef}
                 type="button"
                 className={css.iconButton}
-                data-pilot-workspaces-add-button
                 aria-label={t('workspace.add')}
                 onClick={() => {
                   setWsPickerOpen(v => !v)
                 }}
               >
-                <CodePilotIcon name="folder_add" size={16} />
+                <IconProjectAddOutline16 size={wide ? 16 : 18} />
               </button>
             </Tooltip>
           )}
@@ -1102,12 +1096,11 @@ export function WorkspaceBrowser({
       </div>
 
       {/* The collapsed rail keeps search as its own 36px control. */}
-      {!wide && <div className={css.search} data-pilot-workspaces-search="collapsed">
+      {!wide && <div className={css.search}>
         <Tooltip label={t('search')}>
           <button
             type="button"
             className={css.searchButton}
-            data-pilot-workspaces-search-button
             aria-label={t('search.sessions.aria')}
             onClick={() => {
               setSearchExpanded(true)
@@ -1115,7 +1108,7 @@ export function WorkspaceBrowser({
               expandSidebar()
             }}
           >
-            <CodePilotIcon name="search" size={16} />
+            <IconSearchOutline16 size={18} />
           </button>
         </Tooltip>
       </div>}
@@ -1142,8 +1135,6 @@ export function WorkspaceBrowser({
                 useSessions={useSessions} open={open} forkSession={forkSession}
                 onSessionRename={onSessionRename} onSessionArchive={onSessionArchive}
                 archivedSessionIds={archivedSessionIds}
-                workspaces={workspaces}
-                renderSessionDetails={owner => renderSlot('sidebar.workspaces.session.detail', owner)}
                 orderBy={orderBy}
                 sessionOrderByAccount={sessionOrderByAccount}
                 sessionUpdatedAtByAccount={sessionUpdatedAtByAccount}
@@ -1171,7 +1162,7 @@ export function WorkspaceBrowser({
                 insertWorkspaceBefore={insertWorkspaceBefore}
                 insertSessionBefore={insertSessionBefore}
                 orderBy={orderBy}
-                renderSessionDetails={owner => renderSlot('sidebar.workspaces.session.detail', owner)}
+                home={home}
                 t={t}
                 onRenameRequest={(workspaceId, currentTitle) => {
                   setRenameTarget({ workspaceId, currentTitle })

@@ -15,14 +15,13 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import type { IApiClient } from '@deepseek-ai/dsh-api-remotes/client'
-import { Button, CodePilotIcon, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { SnapshotSelectorHook } from '@deepseek-ai/dsh-client-web-react'
+import { Button, IconPlusOutline16, Modal } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { InjectFace } from '@deepseek-ai/dsh-client-ui-slots'
 import { CustomProviderCard } from './CustomProviderCard.tsx'
 import { deriveKeyRef, messageOf, protocolChoices, providerUsable } from './store.ts'
-import type { ModelsSettingsState, ModelsSettingsStore, ProviderRow } from './store.ts'
+import type { ModelsSettingsStore, ProviderRow } from './store.ts'
+import type { SettingsSchemaOperations } from './schema-operations.ts'
 import { ProviderEditor, type ProviderEditorProps } from './ProviderEditor.tsx'
-import { ProviderBrandIcon } from './ProviderBrandIcon.tsx'
-import { isCodePilotProvider } from './CodePilotProviderCatalog.ts'
 import type { en } from './locales.ts'
 import styles from './ModelsSection.module.css'
 
@@ -30,10 +29,14 @@ import styles from './ModelsSection.module.css'
 export interface ModelsSectionInjected {
   /** The page store (loaded on mount, refreshed on pushed invalidations). */
   controller: ModelsSettingsStore
-  /** uSES subscription hook bound to the store. */
-  useSnapshot: SnapshotSelectorHook<ModelsSettingsState>
+  hooks: {
+    /** Page snapshot bound by the UI renderer as useSnapshot. */
+    snapshot: ModelsSettingsStore['store']
+  }
   /** Wire faces the editor writes through. */
   api: Pick<IApiClient, 'settings' | 'credentials' | 'llm'>
+  /** Settings schema and immutable path callbacks. */
+  schema: SettingsSchemaOperations
   /** Section copy. */
   t: (key: keyof typeof en) => string
 }
@@ -42,7 +45,9 @@ export interface ModelsSectionInjected {
  * Props delivered by the slot outlet: the inject face spread flat (the
  * renderer erases the share boundary at the render call).
  */
-export type ModelsSectionProps = Partial<ModelsSectionInjected>
+export type ModelsSectionProps = Partial<InjectFace<ModelsSectionInjected>>
+
+type ModelsSectionFace = InjectFace<ModelsSectionInjected>
 
 /** Provider identity shared by row actions and confirmation copy. */
 export interface ProviderIdentity {
@@ -65,7 +70,7 @@ interface EditorTarget extends ProviderIdentity {
 /** Values that vary around the shared provider-editor rendering. */
 interface ProviderEditorRenderProps extends Pick<
   ProviderEditorProps,
-  'namespace' | 'api' | 't' | 'readOnly' | 'onClose'
+  'namespace' | 'schema' | 'api' | 't' | 'readOnly' | 'onClose'
 > {
   target: EditorTarget
 }
@@ -171,17 +176,19 @@ export function providerCopy(template: string, target: ProviderIdentity): string
  * @returns the section, or null while the shell has not injected yet.
  */
 export function ModelsSection(props: ModelsSectionProps): ReactNode {
-  const { controller, useSnapshot, api, t } = props
-  if (controller === undefined || useSnapshot === undefined || api === undefined || t === undefined) return null
-  return <Loaded injected={{ controller, useSnapshot, api, t }} />
+  const { controller, useSnapshot, api, schema, t } = props
+  if (
+    controller === undefined || useSnapshot === undefined || api === undefined
+    || schema === undefined || t === undefined
+  ) return null
+  return <Loaded injected={{ controller, useSnapshot, api, schema, t }} />
 }
 
-function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
-  const { controller, api, t } = injected
+function Loaded({ injected }: { injected: ModelsSectionFace }): ReactNode {
+  const { controller, api, schema, t } = injected
   const state = injected.useSnapshot(snapshot => snapshot)
   const [editing, setEditing] = useState<EditorTarget | undefined>(undefined)
   const [adding, setAdding] = useState(false)
-  const [providerQuery, setProviderQuery] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<EditorTarget | undefined>(undefined)
   const [deleting, setDeleting] = useState(false)
   const [deleteFailure, setDeleteFailure] = useState<string | undefined>(undefined)
@@ -199,7 +206,6 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
   const closeEditor = (changed: boolean, target: ProviderIdentity): void => {
     setEditing(undefined)
     setAdding(false)
-    setProviderQuery('')
     setDeclaring(false)
     if (changed) announceSaved(target)
   }
@@ -245,7 +251,7 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
     return (
       <div className={styles['section']}>
         <p className={styles['error']}>{`${t('loadFailed')}: ${errorText}`}</p>
-        <button type="button" className={styles['secondaryButton']} data-pilot-settings-button onClick={() => { void controller.load() }}>
+        <button type="button" className={styles['secondaryButton']} onClick={() => { void controller.load() }}>
           {t('retry')}
         </button>
       </div>
@@ -265,32 +271,20 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
 
   // One fact decides both first-run postures on this page and the onboarding
   // step: whether the user already has a provider to talk to.
-  // Curate only the add-provider directory. A route already present in the
-  // user's configuration must remain visible and removable even when it is
-  // outside the Pilot starter catalog.
-  const visibleRows = state.rows.filter(row => row.configured
-    || isCodePilotProvider(row.entry.provider, row.entry.declared))
-  const anyUsable = visibleRows.some(providerUsable)
-  const configured = visibleRows.filter(row => row.configured)
-  const addable = visibleRows.filter(row => !row.configured && row.entry.settingsNs !== '')
-  const normalizedProviderQuery = providerQuery.trim().toLowerCase()
-  const filteredAddable = normalizedProviderQuery.length === 0
-    ? addable
-    : addable.filter((row) => {
-      const identity = `${row.entry.displayName} ${row.entry.provider}`.toLowerCase()
-      return identity.includes(normalizedProviderQuery)
-    })
+  const anyUsable = state.rows.some(providerUsable)
+  const configured = state.rows.filter(row => row.configured)
+  const addable = state.rows.filter(row => !row.configured && row.entry.settingsNs !== '')
   const addTarget = adding ? editing : undefined
   const addNamespace = addTarget === undefined ? undefined : state.namespaces.get(addTarget.settingsNs)
   // Hand-declared routes live in the pi-ai namespace, which is also the only
   // one whose schema names the protocols one may speak; without it mounted
   // there is nothing to declare and the entry point stays disabled.
-  const protocols = protocolChoices(state.namespaces.get('llm-pi-ai'))
+  const protocols = protocolChoices(state.namespaces.get('llm-pi-ai'), schema)
 
   return (
     <div className={styles['section']}>
-      <h2 className={styles['title']}>{t('providerTitle')}</h2>
-      <p className={styles['intro']}>{t('providerIntro')}</p>
+      <h2 className={styles['title']}>{t('title')}</h2>
+      <p className={styles['intro']}>{t('intro')}</p>
       {!state.writable && state.status === 'ready' ? <p className={styles['notice']}>{t('readOnly')}</p> : null}
       {savedIdentity === undefined
         ? null
@@ -309,10 +303,11 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
             // First-run posture: the provider exists but has no key — the
             // setup card IS its presence on the page, until the user closes it.
             return (
-              <li key={row.entry.provider} className={styles['setupCard']} data-pilot-provider-card="setup">
+              <li key={row.entry.provider} className={styles['setupCard']}>
                 {renderProviderEditor({
                   target,
                   namespace,
+                  schema,
                   api,
                   t,
                   readOnly: !state.writable,
@@ -327,15 +322,8 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
             && row.apiKeyEnv !== undefined
             && row.credential?.configured === false
           return (
-            <li key={row.entry.provider} className={styles['rowCard']} data-pilot-provider-card="row">
+            <li key={row.entry.provider} className={styles['rowCard']}>
               <div className={styles['rowHead']}>
-                <span className={styles['providerMark']}>
-                  <ProviderBrandIcon
-                    provider={row.entry.provider}
-                    displayName={row.entry.displayName}
-                    size={20}
-                  />
-                </span>
                 <span className={styles['rowIdentity']}>
                   <span className={styles['rowName']}>{row.entry.displayName}</span>
                   {/* Only the adapter can tell a hand-declared route from a
@@ -368,7 +356,6 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
                   <button
                     type="button"
                     className={styles['secondaryButton']}
-                    data-pilot-settings-button
                     aria-label={providerCopy(t('editProvider'), target)}
                     onClick={() => {
                       setSavedTarget(undefined)
@@ -387,7 +374,6 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
                       <button
                         type="button"
                         className={styles['dangerButton']}
-                        data-pilot-settings-button
                         aria-label={providerCopy(t('removeProvider'), target)}
                         disabled={!state.writable}
                         onClick={() => {
@@ -406,6 +392,7 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
                 ? renderProviderEditor({
                   target,
                   namespace,
+                  schema,
                   api,
                   t,
                   readOnly: !state.writable,
@@ -417,160 +404,100 @@ function Loaded({ injected }: { injected: ModelsSectionInjected }): ReactNode {
         })}
       </ul>
       <div className={styles['addBlock']}>
-        {adding && addTarget === undefined
+        {addTarget !== undefined && addNamespace !== undefined
           ? (
-            <div className={styles['providerPicker']}>
-              <div className={styles['pickerHeader']}>
-                <div>
-                  <h3 className={styles['pickerTitle']}>{t('chooseProviderTitle')}</h3>
-                  <p className={styles['pickerDescription']}>{t('chooseProviderDescription')}</p>
-                </div>
-                <button
-                  type="button"
-                  className={styles['iconButton']}
-                  aria-label={t('close')}
-                  onClick={() => {
-                    setAdding(false)
-                    setProviderQuery('')
+            <div className={styles['addCard']}>
+              <div className={styles['field']}>
+                <span className={styles['fieldLabel']}>{t('provider')}</span>
+                <select
+                  className={`${styles['input']} ${styles['selectInput']}`}
+                  value={addTarget.provider}
+                  aria-label={t('provider')}
+                  onChange={(event) => {
+                    const row = addable.find(candidate => candidate.entry.provider === event.target.value)
+                    /* v8 ignore next -- the select only lists addable rows */
+                    if (row === undefined) return
+                    setEditing(targetOf(row))
                   }}
                 >
-                  <CodePilotIcon name="cancel" size={14} />
-                </button>
+                  {addable.map(row => (
+                    <option key={row.entry.provider} value={row.entry.provider}>{row.entry.displayName}</option>
+                  ))}
+                </select>
               </div>
-              <label className={styles['providerSearch']} data-pilot-provider-search>
-                <CodePilotIcon name="search" size={15} />
-                <span className={styles['hiddenLabel']}>{t('searchProviders')}</span>
-                <input
-                  type="search"
-                  value={providerQuery}
-                  placeholder={t('searchProviders')}
-                  autoFocus
-                  onChange={(event) => { setProviderQuery(event.target.value) }}
-                />
-              </label>
-              {filteredAddable.length === 0
-                ? <p className={styles['providerEmpty']}>{t('noMatchingProviders')}</p>
-                : (
-                  <div className={styles['providerGrid']}>
-                    {filteredAddable.map(row => (
-                      <button
-                        key={row.entry.provider}
-                        type="button"
-                        className={styles['providerChoice']}
-                        onClick={() => { setEditing(targetOf(row)) }}
-                      >
-                        <span className={styles['providerChoiceIcon']}>
-                          <ProviderBrandIcon
-                            provider={row.entry.provider}
-                            displayName={row.entry.displayName}
-                            size={22}
-                          />
-                        </span>
-                        <span className={styles['providerChoiceText']}>
-                          <span className={styles['providerChoiceName']}>{row.entry.displayName}</span>
-                          <span className={styles['providerChoiceRoute']}>{row.entry.provider}</span>
-                        </span>
-                        <CodePilotIcon name="right" size={15} className={styles['providerChoiceArrow']} />
-                      </button>
-                    ))}
-                  </div>
-                )}
+              <ProviderEditor
+                key={addTarget.provider}
+                provider={addTarget.provider}
+                displayName={addTarget.displayName}
+                hideTitle
+                namespace={addNamespace}
+                schema={schema}
+                settingsPath={addTarget.settingsPath}
+                api={api}
+                t={t}
+                readOnly={!state.writable}
+                onClose={(changed) => { closeEditor(changed, addTarget) }}
+              />
             </div>
           )
-          : addTarget !== undefined && addNamespace !== undefined
+          : declaring
             ? (
-              <div className={styles['addCard']} data-pilot-provider-card="add">
-                <div className={styles['selectedProvider']}>
-                  <span className={styles['providerChoiceIcon']}>
-                    <ProviderBrandIcon
-                      provider={addTarget.provider}
-                      displayName={addTarget.displayName}
-                      size={22}
-                    />
-                  </span>
-                  <span className={styles['providerChoiceText']}>
-                    <span className={styles['providerChoiceName']}>{addTarget.displayName}</span>
-                    <span className={styles['providerChoiceRoute']}>{addTarget.provider}</span>
-                  </span>
-                  <button
-                    type="button"
-                    className={styles['linkButton']}
-                    data-pilot-settings-button
-                    onClick={() => { setEditing(undefined) }}
-                  >
-                    {t('changeProvider')}
-                  </button>
-                </div>
-                <ProviderEditor
-                  key={addTarget.provider}
-                  provider={addTarget.provider}
-                  displayName={addTarget.displayName}
-                  hideTitle
-                  namespace={addNamespace}
-                  settingsPath={addTarget.settingsPath}
+              <div className={styles['addCard']}>
+                <CustomProviderCard
+                  taken={state.rows.map(row => row.entry.provider)}
+                  protocols={protocols}
+                  /* v8 ignore next -- the card only opens from a button disabled without this namespace */
+                  revision={state.namespaces.get('llm-pi-ai')?.revision ?? 0}
                   api={api}
                   t={t}
                   readOnly={!state.writable}
-                  onClose={(changed) => { closeEditor(changed, addTarget) }}
+                  onClose={(changed) => {
+                    setDeclaring(false)
+                    if (changed) void controller.load()
+                  }}
                 />
               </div>
             )
-            : declaring
-              ? (
-                <div className={styles['addCard']} data-pilot-provider-card="add-custom">
-                  <CustomProviderCard
-                    taken={state.rows.map(row => row.entry.provider)}
-                    protocols={protocols}
-                    /* v8 ignore next -- the card only opens from a button disabled without this namespace */
-                    revision={state.namespaces.get('llm-pi-ai')?.revision ?? 0}
-                    api={api}
-                    t={t}
-                    readOnly={!state.writable}
-                    onClose={(changed) => {
-                      setDeclaring(false)
-                      if (changed) void controller.load()
-                    }}
-                  />
-                </div>
-              )
-              : (
+            : (
               // One row for the two ways to gain a provider: adopt one the
               // adapter already knows, or declare one it does not. Side by side
               // and equal-width so they read as siblings and line up with the
               // rows above, rather than two pills of different lengths.
-                <div className={styles['addActions']}>
-                  <button
-                    type="button"
-                    className={styles['addButton']}
-                    disabled={addable.length === 0 || !state.writable}
-                    onClick={() => {
-                      setSavedTarget(undefined)
-                      setDeclaring(false)
-                      setAdding(true)
-                      setEditing(undefined)
-                      setProviderQuery('')
-                    }}
-                  >
-                    {/* Same glyph as the composer's attach button. */}
-                    <CodePilotIcon name="plus" size={14} />
-                    {t('add')}
-                  </button>
-                  <button
-                    type="button"
-                    className={styles['addButton']}
-                    disabled={protocols.length === 0 || !state.writable}
-                    onClick={() => {
-                      setSavedTarget(undefined)
-                      setAdding(false)
-                      setEditing(undefined)
-                      setDeclaring(true)
-                    }}
-                  >
-                    <CodePilotIcon name="plus" size={14} />
-                    {t('customAdd')}
-                  </button>
-                </div>
-              )}
+              <div className={styles['addActions']}>
+                <button
+                  type="button"
+                  className={styles['addButton']}
+                  disabled={addable.length === 0 || !state.writable}
+                  onClick={() => {
+                    const first = addable[0]
+                    /* v8 ignore next -- the button is disabled while nothing is addable */
+                    if (first === undefined) return
+                    setSavedTarget(undefined)
+                    setDeclaring(false)
+                    setAdding(true)
+                    setEditing(targetOf(first))
+                  }}
+                >
+                  {/* Same glyph as the composer's attach button. */}
+                  <IconPlusOutline16 size={14} />
+                  {t('add')}
+                </button>
+                <button
+                  type="button"
+                  className={styles['addButton']}
+                  disabled={protocols.length === 0 || !state.writable}
+                  onClick={() => {
+                    setSavedTarget(undefined)
+                    setAdding(false)
+                    setEditing(undefined)
+                    setDeclaring(true)
+                  }}
+                >
+                  <IconPlusOutline16 size={14} />
+                  {t('customAdd')}
+                </button>
+              </div>
+            )}
       </div>
       <Modal
         open={deleteTarget !== undefined}

@@ -1,143 +1,76 @@
-<p align="center">
-  <img src="apps/desktop/assets/brand-icon.png" width="112" height="112" alt="Pilot Harness 图标">
-</p>
-
-<h1 align="center">Pilot Harness</h1>
+# DeepSeek Harness
 
 [English](README.md) | 中文
 
-<p align="center"><strong>为 DeepSeek Harness 打造的 CodePilot 风格桌面客户端与插件套件。</strong></p>
+DeepSeek Harness（`dsh`）是由 [DeepSeek AI](https://deepseek.com) 开发的开源 agent harness（智能体框架）。
 
-<p align="center">把 DeepSeek Harness 的插件运行时装进一个专注的原生客户端，可视化管理服务商与多模态模型，并让桌面扩展继续保持为普通 Harness 插件。</p>
+它采用**一切皆插件**的架构，并由 [Cordis](https://github.com/cordiverse/cordis) 驱动，其设计参见论文 [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper)。
 
-<p align="center">
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#单独使用插件">插件</a> ·
-  <a href="apps/desktop/README.md">架构</a> ·
-  <a href="LICENSE">MIT 许可证</a>
-</p>
+## 开发者预览
 
-<p align="center">
-  <img alt="许可证：MIT" src="https://img.shields.io/badge/license-MIT-171717">
-  <img alt="平台：macOS、Windows、Linux" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-171717">
-  <img alt="DeepSeek Harness 插件套件" src="https://img.shields.io/badge/DeepSeek%20Harness-plugin%20suite-4f6ef7">
-</p>
+DeepSeek Harness 目前处于 _开发者预览_ 阶段，正在快速迭代。**未来将出现破坏兼容性的变更。**
 
-## 为什么选择 Pilot Harness
+## 运行
 
-DeepSeek Harness 的“一切皆插件”架构很强大，但默认体验围绕通过 CLI 启动的 Web UI 设计。Pilot Harness 保留这套运行时模型，同时补上一个日常桌面产品应有的部分：
+### 通过 `npm` 运行
 
-- **真正的桌面客户端**——Electron 将本地 Harness 运行时打包到 macOS、Windows 与 Linux，负责原生窗口行为，并在启动异常时提供恢复页面。
-- **更安静的 CodePilot 风格界面**——统一 Token、圆角、菜单、Hover、设置卡片、Markdown、对话/轨迹切换与平台化标题栏。
-- **服务商与模型管理**——连接受支持的服务商，声明 OpenAI 兼容接口，将凭证和普通设置分开管理，浏览实时模型目录，并识别支持图片输入的模型。
-- **不杂乱的工作区上下文**——对话列表可展示分支、状态、提醒摘要、模式与模型，Files 则作为真正的右侧栏打开。
-- **插件优先的扩展方式**——主题、Worktree 侧栏、Schedule 摘要与 Session 日志导出仍是 Cordis/DeepSeek Harness 配置行，而不是写死在桌面端的业务逻辑。
-- **可逆的定制**——停用 CodePilot 主题行后，产品图标与视觉覆盖会一起移除，原始 Harness 样式可以重新接管界面。
+安装 `Node.js`，然后运行：
 
-Pilot Harness 不替换 DeepSeek Harness 的 agent loop、Session 日志、工具链、服务商契约或 RPC 实现。Electron 负责打包与原生集成，组合后的 Harness 插件树仍然是应用运行时。
+```sh
+npx @deepseek-ai/dsh web
+```
 
-## 快速开始
+该命令默认会在 `http://127.0.0.1:3080` 启动 Web UI，本机启动时还会用默认浏览器打开页面。通过 SSH 启动时只打印宿主机 URL，因为本地转发地址由 SSH 客户端或编辑器持有。传入 `--no-open` 可仅运行服务器而不打开浏览器。详见 [Web UI 指南](docs/user/guide/index.md)。
 
-<p align="center"><a href="https://github.com/op7418/pilot-harness/releases/latest"><strong>下载 Pilot Harness</strong></a></p>
+### 从源码运行
 
-请从 [GitHub Releases](https://github.com/op7418/pilot-harness/releases/latest) 下载适合你系统的安装包：
+如需从仓库源码运行：
 
-| 平台 | 直接下载 | 安装方法与首次启动安全提示 |
-|---|---|---|
-| **macOS（Apple Silicon）** | [DMG 安装包](https://github.com/op7418/pilot-harness/releases/latest/download/Pilot-Harness-macOS-arm64.dmg)<br>[ZIP 应用](https://github.com/op7418/pilot-harness/releases/latest/download/Pilot-Harness-macOS-arm64.zip) | 打开 DMG，将 `pilot-harness.app` 拖入**应用程序**，然后正常启动。正式 Release 只有在 Developer ID 签名校验通过后才会发布。由于目前尚未启用 Apple 公证，Gatekeeper 首次仍可能阻止启动；此时进入**系统设置 → 隐私与安全性**，点击**仍要打开**，再确认**打开**即可。正式 Release 不需要执行 `xattr`，也不要关闭 Gatekeeper。如果 macOS 提示已签名应用已损坏，请删除应用、核对 Release 校验和并重新下载，不要绕过该警告。[Apple 安全说明](https://support.apple.com/102445)。 |
-| **Windows（x64）** | [EXE 安装程序](https://github.com/op7418/pilot-harness/releases/latest/download/Pilot-Harness-Windows-x64.exe) | 运行 EXE。如果 Microsoft Defender SmartScreen 显示**Windows 已保护你的电脑**，请先确认文件来自本 Release，再选择**更多信息 → 仍要运行**。不要全局关闭 SmartScreen。受管理的电脑可能不显示该选项，此时请联系管理员。[Microsoft SmartScreen 说明](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation)。 |
-| **Linux（x64）** | [AppImage](https://github.com/op7418/pilot-harness/releases/latest/download/Pilot-Harness-Linux-x86_64.AppImage)<br>[DEB](https://github.com/op7418/pilot-harness/releases/latest/download/Pilot-Harness-Linux-amd64.deb)<br>[RPM](https://github.com/op7418/pilot-harness/releases/latest/download/Pilot-Harness-Linux-x86_64.rpm) | DEB：<code>sudo apt install ./Pilot-Harness-Linux-amd64.deb</code><br>RPM：<code>sudo dnf install ./Pilot-Harness-Linux-x86_64.rpm</code><br>AppImage：执行 <code>chmod +x Pilot-Harness-Linux-x86_64.AppImage</code>，再执行 <code>./Pilot-Harness-Linux-x86_64.AppImage</code>。如果文件管理器阻止运行，在文件属性中启用**允许作为程序执行**。预览包尚未签名，因此只有确认来自官方 Release 后才应接受包管理器警告。 |
+```sh
+git clone https://github.com/deepseek-ai/deepseek-harness.git
+cd deepseek-harness
+pnpm install
+pnpm run build
+pnpm dsh web
+```
 
-上表指向提供给普通用户的正式 Release，不是仅保留七天的 Actions 预览产物。正式 macOS 文件必须通过 Developer ID 校验才能发布；在尚未公证期间，预期只需在系统设置中点击一次**仍要打开**。Actions 中的 macOS 预览产物仅使用临时签名供 CI 验证，不属于普通安装路径。以后启用 Apple 公证后，正常情况下将不再需要**仍要打开**，届时必须随发布流水线同步更新本指引。Windows 与 Linux 预览安装包仍未签名。只有对从本仓库 [GitHub 官方 Release](https://github.com/op7418/pilot-harness/releases/latest)下载的文件才应覆盖操作系统警告；不要全局关闭平台安全功能。
+`pnpm run build` 会准备仓库产物。`pnpm dsh web` 会直接使用这些已构建产物，不会重新构建。
 
-安装后打开 Pilot Harness，选择工作区，再前往**设置 → 服务商**连接服务商，并选择它提供的模型。桌面客户端无需另外安装 DeepSeek Harness。源码启动和打包说明放在[开发](#development)部分，不再占用普通用户的安装流程。
+## 社区与支持
 
-## 包含哪些内容
+- 欢迎通过 [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions) 提交反馈或 bug 报告。
+- 为你的插件仓库添加 [`dsh-plugin`](https://github.com/topics/dsh-plugin) 话题，便于被发现。
+- 欢迎加入 DeepSeek Harness 企微群：扫码添加企微小助手并填写入群问卷，完成后小助手会邀请你入群。
 
-| 范围 | Pilot Harness 增加的能力 | 所属模块 |
-|---|---|---|
-| 桌面外壳 | 原生窗口、本地运行时生命周期、目录选择、恢复页、安装包与平台图标 | Electron 应用 |
-| 视觉系统 | CodePilot 风格设计 Token 与组件契约 | <code>@deepseek-ai/dsh-client-ui-codepilot-theme</code> |
-| 工作区文件 | 右侧栏、文件数量、分支摘要、条目操作与 <code>@path</code> 插入 | <code>@deepseek-ai/dsh-ui-worktree</code> |
-| 提醒摘要 | Session Hover 详情中的生效提醒数量与最近时间 | <code>@deepseek-ai/dsh-ui-schedule-summary</code> |
-| Session 导出 | 轨迹工具栏与 <code>/export</code> 提供的单 Session ZIP 导出 | <code>@deepseek-ai/dsh-session-log-export</code> |
-| 服务商与模型 | 可配置服务商 Adapter、凭证/设置 UI、实时目录与多模态标记 | 现有 Harness 插件加 Pilot Harness 桌面 profile |
+<table>
+  <thead>
+    <tr>
+      <th align="center">企微小助手</th>
+      <th align="center">入群问卷</th>
+      <th align="center">微信公众号</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td align="center"><img src="https://cdn.deepseek.com/harness/readme/community-wecom-assistant.png" alt="DeepSeek Harness 企微小助手二维码" width="180" height="180"></td>
+      <td align="center"><a href="https://trtgsjkv6r.feishu.cn/share/base/form/shrcnIt5twSVdLGD52KJBckGCgg"><img src="https://cdn.deepseek.com/harness/readme/community-wecom-survey.png" alt="DeepSeek Harness 入群问卷二维码" width="180" height="180"></a></td>
+      <td align="center"><img src="https://cdn.deepseek.com/harness/readme/community-wechat-official-account.png" alt="DeepSeek Harness 团队微信公众号二维码" width="180" height="180"></td>
+    </tr>
+  </tbody>
+</table>
 
-服务商/模型体验有意采用 **profile 组合**，而不是重新实现一个服务商插件。它挂载现有 Adapter、Settings 与 Credentials 契约，并且只在真实服务商返回可用模型后替换桌面的默认模型占位项。
+## 参与贡献
 
-## 单独使用插件
-
-桌面客户端已经内置下面所有插件。如果你使用本地 DeepSeek Harness Web profile，只需用一条命令安装想要的功能；每个 Release 产物都是预构建的 <code>dsh.bundle</code>，不需要克隆仓库、手写 YAML 或在本地构建。
-
-### CodePilot 主题
-
-~~~sh
-dsh plugin --profile web add https://github.com/op7418/pilot-harness/releases/latest/download/deepseek-ai-dsh-client-ui-codepilot-theme-0.1.0-rc.5.tgz
-~~~
-
-应用 Pilot Harness 视觉系统与产品图标。移除插件后会恢复 Harness 原始界面。详见[主题说明](packages/client/ui-codepilot-theme/README.md)。
-
-### 文件侧栏
-
-~~~sh
-dsh plugin --profile web add https://github.com/op7418/pilot-harness/releases/latest/download/deepseek-ai-dsh-ui-worktree-0.1.0-rc.5.tgz
-~~~
-
-增加限制在工作区内的右侧文件栏、文件数、分支摘要、条目操作与 <code>@路径</code> 插入。详见[文件插件说明](packages/workspace/ui-worktree/README.md)。
-
-### 提醒摘要
-
-~~~sh
-dsh plugin --profile web add https://github.com/op7418/pilot-harness/releases/latest/download/deepseek-ai-dsh-ui-schedule-summary-0.1.0-rc.5.tgz
-~~~
-
-在 Session 悬浮详情中增加活动提醒元数据，上游 Schedule 插件仍然是提醒状态权威。详见[提醒插件说明](packages/schedule/ui-schedule-summary/README.md)。
-
-### Session 日志导出
-
-~~~sh
-dsh plugin --profile web add https://github.com/op7418/pilot-harness/releases/latest/download/deepseek-ai-dsh-session-log-export-0.1.0-rc.7.tgz
-~~~
-
-在**轨迹**工具栏和 <code>/export</code> 命令中增加单 Session ZIP 导出。详见[导出插件说明](packages/session-query/session-log-export/README.md)。
-
-安装后重启 Web profile，并用 <code>dsh --profile web --dump-config</code> 确认新增配置行。文件侧栏和提醒摘要依赖 Pilot Harness v0.1.0 内置的 UI Slot 契约；较旧的上游 Harness 可以安装这两个 bundle，但无法呈现它们的 UI。
-
-移除插件时使用其详情页显示的同名包，例如：
-
-~~~sh
-dsh plugin --profile web remove @deepseek-ai/dsh-ui-worktree
-~~~
-
-<a id="development"></a>
+参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 开发
 
-~~~sh
-git clone https://github.com/op7418/pilot-harness.git
-cd pilot-harness
-pnpm install
-pnpm run desktop:dev
-~~~
+请先阅读[开发指南](docs/development.md)与[架构文档](docs/architecture.md)。
 
-运行桌面检查：
-
-~~~sh
-pnpm run desktop:test
-pnpm --filter @deepseek-ai/dsh-desktop run typecheck
-pnpm --filter @deepseek-ai/dsh-desktop run test:e2e
-~~~
-
-正式安装包不会在开发者电脑上构建或上传。每次通过验证并推送到 `main` 的提交，以及未填写 Release Tag 的手动触发，都会在原生 macOS、Windows 与 Linux runner 上生成保留七天的 Actions 预览产物。版本一致的 `v*` Tag 才会进入正式发布路径，校验各平台产物和 macOS Developer ID 签名、生成 `SHA256SUMS.txt`，再发布 GitHub Release。
-
-`Sync DeepSeek Harness upstream` 工作流每天北京时间 09:00 检查最新的非草稿官方 Release。能够干净合并的更新会在不强推的前提下完成合并和验证，提交到 `main`，再以 `v<上游版本>-pilot.1` 调用同一套原生发布流水线。遇到合并冲突时，工作流会创建或更新 GitHub Issue，并在改动 `main` 前停止；缺少 macOS 签名 Secrets 时也会创建 Issue，只同步已验证的源码，不发布未签名正式版。解决对应条件后重新运行工作流，就会继续待发布版本。
-
-底层系统资料见 [DeepSeek Harness 架构](docs/architecture.md)、[开发指南](docs/development.md)与[桌面架构](apps/desktop/README.md)。
-
-## 上游、署名与商标说明
-
-Pilot Harness 是一个独立社区项目，派生自 MIT 许可的 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)，视觉体验参考了 [CodePilot](https://github.com/op7418/CodePilot)。它不是 DeepSeek 官方产品，也未获得 DeepSeek 的背书或附属关系。“DeepSeek”“DeepSeek Harness”与“CodePilot”归各自权利人所有。
+面向 agent：请遵循 [AGENTS.md](AGENTS.md)。
 
 ## 许可证
 
-Pilot Harness 使用 [MIT 许可证](LICENSE)开源。第三方软件及许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+[MIT](LICENSE)
+
+第三方依赖及其许可证见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

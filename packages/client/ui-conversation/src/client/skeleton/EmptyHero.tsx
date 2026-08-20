@@ -7,7 +7,7 @@
 import { useId } from 'react'
 import type { ReactNode, RefObject } from 'react'
 import {
-  CodePilotIcon, FishLogo, IconChevronDownOutline14,
+  FishLogo, IconChevronDownOutline14, IconFolderClose16, IconFolderOpen16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { workspaceTitleOf } from '@deepseek-ai/dsh-client-runtime/client'
 import type { ConversationSlotProps } from '../contract/slots.ts'
@@ -50,13 +50,14 @@ export function WorkspaceChip({ buttonRef, label, menuOpen = false, onClick, t }
       ref={buttonRef}
       type="button"
       className={css.workspace}
-      data-pilot-workspace-control
       aria-label={t('hero.chooseWorkspace')}
       aria-haspopup="menu"
       aria-expanded={menuOpen}
       onClick={onClick}
     >
-      <CodePilotIcon name="folder" className={css.folder} size={14} />
+      {label === undefined
+        ? <IconFolderClose16 className={css.folder} size={16} />
+        : <IconFolderOpen16 className={css.folder} size={16} />}
       <span className={css.workspaceLabel}>{label ?? t('hero.chooseWorkspace')}</span>
       <IconChevronDownOutline14 className={css.chevron} size={12} />
     </button>
@@ -74,7 +75,7 @@ export function HeroGlow({ className }: { className?: string | undefined }) {
   // Stable filter id so multiple hero mounts do not collide in the DOM.
   const glowFilterId = `empty-glow-${useId().replace(/:/g, '')}`
   return (
-    <svg className={className} data-pilot-hero-glow viewBox="0 0 1051 468" fill="none" aria-hidden="true">
+    <svg className={className} viewBox="0 0 1051 468" fill="none" aria-hidden="true">
       <defs>
         <filter
           id={glowFilterId}
@@ -101,6 +102,8 @@ export function HeroGlow({ className }: { className?: string | undefined }) {
 export interface HeroShellProps {
   /** The owner's locale seat, passed down as a plain prop. */
   t: HeroTranslate
+  /** Authorized renderer for the hero brand-mark slot. */
+  renderSlot: ConversationSlotProps['renderSlot']
   /** Overlay content after the stack (modals). */
   children?: ReactNode
 }
@@ -111,18 +114,19 @@ export interface HeroShellProps {
  * @param props - see {@link HeroShellProps}.
  * @returns the centered hero element tree.
  */
-export function HeroShell({ t, children }: HeroShellProps) {
+export function HeroShell({ t, renderSlot, children }: HeroShellProps) {
   return (
     <div className={css.root}>
       <div className={css.stack}>
-        <div className={css.headline} data-pilot-hero>
+        <div className={css.headline}>
           {/* figma 34:10412: fish 34×25 leading the headline, gap 10. */}
-          <span className={css.fishHitbox} data-pilot-brand-mark="hero">
-            <FishLogo size={34} className={css.fish} />
+          <span className={css.fishHitbox}>
+            {renderSlot('conversation.hero.brand.mark', { size: 34, className: css.fish }, {
+              fallback: <FishLogo size={34} className={css.fish} />,
+            })}
           </span>
-          <span className={css.headlineText} data-pilot-hero-title>{t('hero.headline')}</span>
-          <span className={css.previewBadge} data-pilot-hero-preview>{t('hero.preview')}</span>
-          <span className={css.subtitle} data-pilot-hero-subtitle>{t('hero.subtitle')}</span>
+          <span className={css.headlineText}>{t('hero.headline')}</span>
+          <span className={css.previewBadge}>{t('hero.preview')}</span>
         </div>
         <div className={css.body}>
           {/* The resident composer (ConversationRoot's root-owned scrollport;

@@ -10,10 +10,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { ChangeEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import clsx from 'clsx'
 import {
-  CodePilotIcon, Toast, Tooltip,
+  IconPlusOutline16, IconWarningOutline16, Toast, Tooltip,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { AttachmentRail, DropOverlay, ImageLightbox } from '@deepseek-ai/dsh-client-ui-attachment'
-import type { AttachmentRailItem } from '@deepseek-ai/dsh-client-ui-attachment'
 // Type-only: the `plan` projection key merge (the TodoDock posture — the
 // composer reads a host-computed value; the domain owns the key).
 import type {} from '@deepseek-ai/dsh-plan-mode/client'
@@ -23,12 +21,11 @@ import type {} from '@deepseek-ai/dsh-goal/client'
 // wire types: apiproxy's sessions contract declares it, and client-runtime's
 // api-remotes import already places it in every client program.
 import type { Translate } from '@deepseek-ai/dsh-client-ui-slots'
-import type { ComposerAttachment, ComposerBarProps } from '../contract/slots.ts'
+import type { ComposerBarProps } from '../contract/slots.ts'
 import { deriveDecorations } from '../input/decorations.ts'
 import type { DraftDecorations } from '../input/decorations.ts'
-import {
-  attachmentErrorText, attachmentRailLabels, dropOverlayLabels, imageSizeText, lightboxLabels,
-} from '../image-labels.ts'
+import { attachmentErrorText, imageSizeText } from '../image-labels.ts'
+import { ReferenceIcon } from '../reference/ReferenceIcon.tsx'
 import { ContextMeter } from './ContextMeter.tsx'
 import { PermissionSelect } from './PermissionSelect.tsx'
 import { isSafariBrowser, repairSafariTextareaLayout } from './safari.ts'
@@ -36,11 +33,6 @@ import css from './InputBar.module.css'
 
 /** Decoration product of the no-session state (no machine, empty draft). */
 const INERT_DECORATIONS: DraftDecorations = { token: null, chips: [], textRefs: [], hint: null }
-
-/** Rail thumbnail carrying its source attachment for the open/remove callbacks. */
-interface ComposerRailItem extends AttachmentRailItem {
-  attachment: ComposerAttachment
-}
 
 export type InputBarProps = ComposerBarProps
 
@@ -50,7 +42,7 @@ export function InputBar({
   renderSlot, useNotices, useLexicon, useMenuLauncher,
   useProjection, sessionId, variant, disabled: inert = false, blocked,
   workspacePickerOpen = false, onRequestWorkspace,
-  placeholder, accessory, overlay, leftItems, rightItems, footer, contextItems,
+  placeholder, accessory, overlay, leftItems, rightItems, footer,
 }: InputBarProps) {
   const input = useInput(s => s)
   const notice = useNotices(s => s)
@@ -74,11 +66,9 @@ export function InputBar({
     [draftImages, input?.imageIds],
   )
   const empty = draft.trim() === '' && attachments.length === 0
-  const [preview, setPreview] = useState<ComposerAttachment | null>(null)
-  const [dragActive, setDragActive] = useState(false)
-  // Transient error banner (image-intake rejections and prompt failures): the
-  // seq keys the Toast so an identical repeated message restarts the
-  // hold-then-fade cycle instead of silently reusing the faded one.
+  // Transient error banner (machine notices, image-intake rejections, and
+  // prompt failures): the seq keys the Toast so an identical repeated message
+  // restarts the hold-then-fade cycle instead of reusing the faded one.
   const [toast, setToast] = useState<{ seq: number; text: string } | null>(null)
   const toastSeq = useRef(0)
   const showToast = useCallback((text: string) => {
@@ -102,9 +92,11 @@ export function InputBar({
       ? attachmentErrorText(t, promptError.error.details.reason, imageLimits)
       : `${promptError.error.message} (${promptError.error.code})`)
   }, [promptError, showToast, t, imageLimits])
+  useEffect(() => {
+    if (notice?.level === 'error') showToast(notice.text)
+  }, [notice, showToast])
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const cardRef = useRef<HTMLDivElement | null>(null)
-  const dragDepthRef = useRef(0)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const mirrorRef = useRef<HTMLDivElement | null>(null)
   const safari = useMemo(() => isSafariBrowser(navigator), [])
@@ -168,11 +160,6 @@ export function InputBar({
     safariNativeShrinkRef.current = false
     if (safari && nativeShrink) repairSafariTextareaLayout(inputRef.current)
   }, [draft, safari])
-
-  useEffect(() => {
-    if (preview !== null && !attachments.some(attachment => attachment.id === preview.id)) setPreview(null)
-  }, [attachments, preview])
-
   // Scroll the draft scrollport the minimum that brings `caret` into view — the
   // browser's own behavior for typing, performed for the paths where it does
   // not act.
@@ -214,6 +201,7 @@ export function InputBar({
   const revealSelectionFocus = (el: HTMLTextAreaElement): void => {
     // selectionStart/End are number|null in lib.dom; the type-aware lint program narrows them.
     const caret = el.selectionDirection === 'backward' ? el.selectionStart : el.selectionEnd
+    // oxlint-disable-next-line typescript/no-unnecessary-condition
     revealCaret(caret ?? el.value.length)
   }
 
@@ -281,6 +269,14 @@ export function InputBar({
     return () => { el.removeEventListener('wheel', onWheel) }
   }, [])
 
+  // selectionStart/End are number|null in lib.dom; the type-aware lint program narrows them.
+  /* oxlint-disable typescript/no-unnecessary-condition */
+  const selectionOf = (el: HTMLTextAreaElement) => ({
+    start: el.selectionStart ?? 0,
+    end: el.selectionEnd ?? el.selectionStart ?? 0,
+  })
+  /* oxlint-enable typescript/no-unnecessary-condition */
+
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>): void => {
     if (workspaceTrigger) {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -291,12 +287,31 @@ export function InputBar({
     }
     // Absent machine without a Workspace recovery action stays disabled; the
     // guard narrows the faces for the paths below.
-    if (keyboard === undefined || inputActions === undefined) return
+    if (input === undefined || keyboard === undefined || inputActions === undefined) return
     // Shift+Enter is the native newline UNCONDITIONALLY — decided before the
     // IME guard so a composition-closing Shift+Enter still breaks the line.
     if (e.key === 'Enter' && e.shiftKey) return
     // keyCode 229 is the legacy IME-composition signal engines emit without isComposing.
+    // oxlint-disable-next-line typescript/no-deprecated
     const composing = composingRef.current || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229
+    if (!composing && !machineBusy && !locked
+      && (e.key === 'Backspace' || e.key === 'Delete')) {
+      const selection = selectionOf(e.currentTarget)
+      if (selection.start === selection.end) {
+        const occurrence = input.occurrences.find(o => e.key === 'Backspace'
+          ? o.offset + o.length === selection.start
+          : o.offset === selection.start)
+        if (occurrence !== undefined) {
+          e.preventDefault()
+          const start = occurrence.offset
+          const end = occurrence.offset + occurrence.length
+          keyboard.setDraft(draft.slice(0, start) + draft.slice(end), { start, end, insertedLength: 0 })
+          restoreCaret(e.currentTarget, start)
+          keyboard.track(keyboard.snapshot.draft, start)
+          return
+        }
+      }
+    }
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       if (keyboard.arbitrate(e.key === 'ArrowUp' ? 'up' : 'down', composing) === 'consumed') e.preventDefault()
       return
@@ -359,46 +374,36 @@ export function InputBar({
     safariNativeShrinkRef.current = safari && next.length < draft.length
     keyboard.setDraft(next)
     // selectionStart is number|null in lib.dom; the type-aware lint program narrows it.
+    // oxlint-disable-next-line typescript/no-unnecessary-condition
     keyboard.track(next, e.target.selectionStart ?? next.length)
   }
-
-  // ---- chip atomicity (DOM layer; the machine sees only transactions) ----
-  // Placeholders occupy exactly one char, so caret positions are always
-  // BETWEEN them — what needs normalizing is deletion (whole chip per
-  // Backspace/Delete via native single-char semantics, which U+FFFC already
-  // gives us) and selection endpoints: Shift-extension snapping is native
-  // too (one char = one step). Mouse selection of a chip is handled in the
-  // backdrop click handler below. Undo/redo must NOT reach the browser: the
-  // machine owns the transaction log.
-  // selectionStart/End are number|null in lib.dom; the type-aware lint program narrows them.
-  const selectionOf = (el: HTMLTextAreaElement) => ({
-    start: el.selectionStart ?? 0,
-    end: el.selectionEnd ?? el.selectionStart ?? 0,
-  })
 
   const onCopyOrCut = (e: React.ClipboardEvent<HTMLTextAreaElement>, cut: boolean): void => {
     if (input === undefined || keyboard === undefined) return // absent machine: no draft can be copied or cut
     const el = e.currentTarget
     const { start, end } = selectionOf(el)
     if (start === end) return
-    const slice = draft.slice(start, end)
-    const touched = input.occurrences.filter(o => o.offset >= start && o.offset < end)
+    const touched = input.occurrences.filter(o => o.offset < end && o.offset + o.length > start)
     if (touched.length === 0 && !cut) return // plain copy of plain text: native path is fine
     e.preventDefault()
-    // Expand placeholders to their owner clipboard projections.
+    const copyStart = touched.reduce((value, o) => Math.min(value, o.offset), start)
+    const copyEnd = touched.reduce((value, o) => Math.max(value, o.offset + o.length), end)
+    // Expand structured ranges to their owner clipboard projections.
     let text = ''
-    let cursor = start
+    let cursor = copyStart
     for (const o of touched) {
       text += draft.slice(cursor, o.offset) + o.clipboardText
-      cursor = o.offset + 1
+      cursor = o.offset + o.length
     }
-    text += draft.slice(cursor, end)
+    text += draft.slice(cursor, copyEnd)
     e.clipboardData.setData('text/plain', text)
     if (cut && !machineBusy && !locked) {
-      keyboard.setDraft(draft.slice(0, start) + draft.slice(end), { start, end, insertedLength: 0 })
-      restoreCaret(el, start)
+      keyboard.setDraft(
+        draft.slice(0, copyStart) + draft.slice(copyEnd),
+        { start: copyStart, end: copyEnd, insertedLength: 0 },
+      )
+      restoreCaret(el, copyStart)
     }
-    void slice
   }
 
   const onPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>): void => {
@@ -459,74 +464,7 @@ export function InputBar({
     if (rejected !== null) showToast(rejected)
   }, [addImages, attachments, imageLimits, showToast, t])
 
-  // Whole-page file-drop intake (DeepSeek Chat behavior): the listeners live
-  // on the document so a drop anywhere over the window adds images, not only
-  // over the composer card. Safe as document-level state: the composer-bar
-  // slot is `kind: 'single'`, so at most one bar is mounted to bind these.
-  // Text drags carry no 'Files' type and pass through untouched, keeping the
-  // native drop-text-into-textarea path. The overlay layer itself is
-  // pointer-inert, so it never disturbs the enter/leave count.
   const canAcceptDrop = !locked && !machineBusy && addImages !== undefined
-  useEffect(() => {
-    const hasFiles = (event: globalThis.DragEvent): boolean =>
-      event.dataTransfer?.types.includes('Files') ?? false
-    const reset = (): void => {
-      dragDepthRef.current = 0
-      setDragActive(false)
-    }
-    const onDragEnter = (event: globalThis.DragEvent): void => {
-      if (!hasFiles(event)) return
-      event.preventDefault()
-      dragDepthRef.current += 1
-      setDragActive(true)
-    }
-    const onDragOver = (event: globalThis.DragEvent): void => {
-      if (!hasFiles(event) || event.dataTransfer === null) return
-      event.preventDefault()
-      event.dataTransfer.dropEffect = canAcceptDrop ? 'copy' : 'none'
-    }
-    const onDragLeave = (event: globalThis.DragEvent): void => {
-      if (!hasFiles(event)) return
-      dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
-      if (dragDepthRef.current === 0) setDragActive(false)
-      // Leaving through the viewport edge does not balance the count on every
-      // engine; a page-root leave at the border means the drag left the window.
-      const leavingViewport = event.clientX <= 0 || event.clientY <= 0
-        || event.clientX >= window.innerWidth || event.clientY >= window.innerHeight
-      if ((event.target === document.documentElement || event.target === document.body) && leavingViewport) reset()
-    }
-    const onDrop = (event: globalThis.DragEvent): void => {
-      if (!hasFiles(event)) return
-      event.preventDefault()
-      reset()
-      if (!canAcceptDrop) return
-      intakeImages([...(event.dataTransfer?.files ?? [])])
-    }
-    document.addEventListener('dragenter', onDragEnter)
-    document.addEventListener('dragover', onDragOver)
-    document.addEventListener('dragleave', onDragLeave)
-    document.addEventListener('drop', onDrop)
-    window.addEventListener('dragend', reset)
-    return () => {
-      document.removeEventListener('dragenter', onDragEnter)
-      document.removeEventListener('dragover', onDragOver)
-      document.removeEventListener('dragleave', onDragLeave)
-      document.removeEventListener('drop', onDrop)
-      window.removeEventListener('dragend', reset)
-    }
-  }, [canAcceptDrop, intakeImages])
-
-  const closePreview = useCallback(() => { setPreview(null) }, [])
-
-  // Rail thumbnails with their strings resolved here: the attachment atoms are
-  // zero-cordis and read no locale.
-  const railItems = useMemo<ComposerRailItem[]>(() => attachments.map(attachment => ({
-    id: attachment.id,
-    previewUrl: attachment.previewUrl,
-    alt: attachment.file.name || t('image.pending'),
-    removeLabel: t('image.remove', { name: attachment.file.name }),
-    attachment,
-  })), [attachments, t])
 
   const onSelect = (e: React.SyntheticEvent<HTMLTextAreaElement>): void => {
     // Any caret/selection gesture ends a live paste attempt (the machine
@@ -572,16 +510,15 @@ export function InputBar({
     ? null
     : <PermissionSelect key={sessionId} value={permissions} locked={locked} command={command} t={t} />
 
-  // Mirror-layer decorations: a visible backdrop with transparent text. The
-  // claim token highlights through behind the textarea glyphs; each U+FFFC
-  // placeholder renders as a chip (the textarea's own glyph is invisible, the
-  // backdrop chip supplies the visual); the claim hint is ghost text.
+  // Mirror-layer decorations: a visible backdrop with transparent textarea
+  // text. Claim tokens and references retain the draft's own glyph metrics,
+  // so their decoration cannot drift from wrapping, selection, or the caret.
   const deco = input === undefined ? INERT_DECORATIONS : deriveDecorations(input, lexicon)
   const backdrop: ReactNode[] = []
   {
-    // Segment boundaries: the token range end, every chip offset, and every
-    // text-ref range — merged in draft order (the sources never
-    // overlap: chips sit on placeholders, text-refs on plain tokens, the
+    // Segment boundaries: the token range end, every structured-reference
+    // offset, and every text-ref range — merged in draft order (the sources never
+    // overlap: structured references own their ranges, text-refs own plain tokens, the
     // claim token only leads).
     let cursor = 0
     const pushPlain = (upTo: number): void => {
@@ -609,27 +546,44 @@ export function InputBar({
       if (b.kind === 'chip') {
         const chip = b.chip
         backdrop.push(
-          // The cell's ::before renders U+FFFC itself so its advance equals the
-          // textarea's placeholder exactly (same char, same font); the label is
-          // a clipped overlay that never affects layout.
           <span
             key={`chip-${chip.occurrenceId}`}
             className={clsx(css.chip, chip.invalid && css.chipInvalid)}
             data-decoration="chip"
+            data-reference-appearance={chip.appearance}
             data-occurrence={chip.occurrenceId}
             data-invalid={chip.invalid || undefined}
             title={chip.label}
           >
-            <span className={css.chipLabel}>{chip.label}</span>
+            {chip.appearance === undefined
+              ? chip.text[0]
+              : (
+                <span className={css.chipTrigger}>
+                  <span className={css.chipTriggerGlyph}>{chip.text[0]}</span>
+                  <ReferenceIcon kind={chip.appearance} size={16} className={css.chipIcon} />
+                </span>
+              )}
+            <span>{chip.text.slice(1)}</span>
           </span>,
         )
-        cursor = chip.offset + 1 // the placeholder char the chip stands for
+        cursor = chip.offset + chip.length
       } else {
         // Plain-range highlight: the glyphs stay the
         // textarea's (advance untouched); the mark paints the chip look.
+        const text = draft.slice(b.ref.start, b.ref.end)
         backdrop.push(
           <mark key={`ref-${b.ref.start}`} className={css.textRef} data-decoration="text-ref">
-            {draft.slice(b.ref.start, b.ref.end)}
+            {b.ref.appearance === 'folder'
+              ? (
+                <>
+                  <span className={css.textRefTrigger}>
+                    <span className={css.textRefTriggerGlyph}>{text[0]}</span>
+                    <ReferenceIcon kind="folder" size={16} className={css.textRefIcon} />
+                  </span>
+                  {text.slice(1)}
+                </>
+              )
+              : text}
           </mark>,
         )
         cursor = b.ref.end
@@ -650,26 +604,17 @@ export function InputBar({
 
   return (
     <div className={clsx(css.root, variant === 'hero' && css.hero)}>
-      {dragActive && (
-        <DropOverlay
-          disabled={!canAcceptDrop}
-          labels={dropOverlayLabels(t, canAcceptDrop, imageLimits === undefined ? undefined : {
-            count: imageLimits.maxImagesPerMessage,
-            size: imageSizeText(imageLimits.maxImageBytes),
-          })}
-        />
-      )}
       {toast !== null && (
         <Toast
           key={toast.seq}
           text={toast.text}
-          icon={<CodePilotIcon name="warning" size={16} />}
+          icon={<IconWarningOutline16 />}
           anchor={cardRef.current}
           onDone={dismissToast}
         />
       )}
-      {notice !== null && (
-        <div className={clsx(css.notice, notice.level === 'error' && css.noticeError)} role="status">
+      {notice?.level === 'info' && (
+        <div className={css.notice} role="status">
           {notice.text}
         </div>
       )}
@@ -682,23 +627,21 @@ export function InputBar({
         ref={cardRef}
         className={clsx(css.card, workspaceTrigger && css.cardWorkspaceTrigger)}
         data-composer-card
-        data-pilot-workspace-trigger={workspaceTrigger || undefined}
-        data-beautifului="prompt-bar"
         onClick={workspaceTrigger ? onRequestWorkspace : undefined}
         onPointerDown={workspaceTrigger ? (e) => { e.stopPropagation() } : undefined}
       >
         {overlay !== undefined && <div className={css.overlayAnchor}>{overlay}</div>}
         {accessory !== undefined && <div className={css.accessory}>{accessory}</div>}
-        {railItems.length > 0 && (
-          <div className={css.attachments}>
-            <AttachmentRail
-              items={railItems}
-              labels={attachmentRailLabels(t)}
-              onOpen={(item) => { setPreview(item.attachment) }}
-              onRemove={(item) => { removeImage?.(item.attachment.id) }}
-            />
-          </div>
-        )}
+        {renderSlot('conversation.input.attachments', {
+          attachments,
+          canAcceptDrop,
+          onAddImages: intakeImages,
+          onRemoveImage: (id) => { removeImage?.(id) },
+          dropLimits: imageLimits === undefined ? undefined : {
+            count: imageLimits.maxImagesPerMessage,
+            size: imageSizeText(imageLimits.maxImageBytes),
+          },
+        })}
         {/* One scrollport, two text layers. The hidden mirror renders draft+'\n' and stretches the
             stack to the draft's FULL height (counting rows by '\n' cannot see soft wraps); the
             absolutely-positioned backdrop and textarea ride that height, and .scroll — capped at 14
@@ -708,7 +651,14 @@ export function InputBar({
             which a compositor-driven gesture outruns and leaves the words trailing the caret. */}
         <div ref={scrollRef} className={css.scroll} data-input-scroll>
           <div className={css.grow}>
-            <div aria-hidden className={css.backdrop} data-input-backdrop>{backdrop}</div>
+            <div
+              aria-hidden
+              className={clsx(css.backdrop, textareaDisabled && css.backdropDisabled)}
+              data-input-backdrop
+              data-disabled={textareaDisabled || undefined}
+            >
+              {backdrop}
+            </div>
             <textarea
               ref={inputRef}
               className={css.input}
@@ -755,7 +705,7 @@ export function InputBar({
                 onMouseDown={keepFocus}
                 onClick={onToggleCommandMenu}
               >
-                <CodePilotIcon name="plus" size={14} />
+                <IconPlusOutline16 size={14} />
               </button>
             </Tooltip>
             <div className={css.modes}>
@@ -767,12 +717,7 @@ export function InputBar({
           <div className={css.trailing}>
             {rightItems}
             {renderSlot('conversation.input.model', { locked: modelSeatLocked })}
-            <ContextMeter
-              useSession={useSession}
-              useProjection={useProjection}
-              contextItems={contextItems}
-              t={t}
-            />
+            <ContextMeter useProjection={useProjection} t={t} />
             {interruptible && (
               <Tooltip label={t('input.stop')} side="top" delayMs={500}>
                 <button
@@ -783,7 +728,9 @@ export function InputBar({
                   onMouseDown={keepFocus}
                   onClick={stop}
                 >
-                  <CodePilotIcon name="stop" size={14} />
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
+                    <rect x="3" y="3" width="10" height="10" rx="3" fill="currentColor" />
+                  </svg>
                 </button>
               </Tooltip>
             )}
@@ -797,32 +744,20 @@ export function InputBar({
                 onClick={onPrimary}
               >
                 {primaryStops ? (
-                  <CodePilotIcon name="stop" size={14} />
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
+                    <rect x="3" y="3" width="10" height="10" rx="3" fill="currentColor" />
+                  </svg>
                 ) : (
-                  <CodePilotIcon name="send" size={16} strokeWidth={2.2} />
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden>
+                    <path d="M8.3125 0.980183C8.66767 1.0531 8.97902 1.20418 9.2627 1.43233C9.48724 1.61297 9.73029 1.85793 9.97949 2.10714L14.707 6.83468L13.293 8.24874L9 3.95577V15.0417H7V3.95577L2.70703 8.24874L1.29297 6.83468L6.02051 2.10714C6.26971 1.85793 6.51277 1.61297 6.7373 1.43233C6.97662 1.23986 7.28445 1.04402 7.6875 0.980183C7.8973 0.947006 8.1031 0.95516 8.3125 0.980183Z" fill="currentColor" />
+                  </svg>
                 )}
               </button>
             </Tooltip>
           </div>
         </div>
-        {footer !== null && footer !== undefined && (
-          <div
-            className={css.contextFooter}
-            data-pilot-composer-context
-            data-beautifului="context-strip"
-          >
-            {footer}
-          </div>
-        )}
       </div>
-      {preview !== null && (
-        <ImageLightbox
-          src={preview.previewUrl}
-          alt={preview.file.name || t('image.original')}
-          labels={lightboxLabels(t)}
-          onClose={closePreview}
-        />
-      )}
+      {footer}
     </div>
   )
 }

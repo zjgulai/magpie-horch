@@ -68,9 +68,9 @@ describe('web e2e: startup auto-selection', () => {
   it('keeps the resident Hero and composer nodes when the first Workspace session appears', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-first-workspace-stable-tree'))
     await page.locator(`${ROOT_PHASE}[data-phase="hero"]`).waitFor({ timeout: 15_000 })
-    const headline = page.getByText('Pilot Harness', { exact: true })
-    const fish = headline.locator('xpath=preceding-sibling::span[1]/*[name()="svg"]')
-    const fishHitbox = fish.locator('..')
+    const headline = page.getByText('Into the Unknown', { exact: true })
+    const fishHitbox = headline.locator('xpath=preceding-sibling::span[1]')
+    const fish = fishHitbox.locator('svg')
     expect(await fish.evaluate(node => getComputedStyle(node).color))
       .toBe(await headline.evaluate(node => getComputedStyle(node).color))
     await fishHitbox.hover()
@@ -96,9 +96,7 @@ describe('web e2e: startup auto-selection', () => {
       return {
         phase: document.querySelector('div[data-phase]')?.getAttribute('data-phase'),
         root: document.querySelector('div[data-phase="hero"]') === before.root,
-        // The same textarea loses its temporary workspace-picker accessible
-        // name once a workspace is connected; compare node identity directly.
-        workspaceChip: document.querySelector('textarea') === before.workspaceChip,
+        workspaceChip: document.querySelector('[aria-label="Choose workspace"]') === before.workspaceChip,
         scrollBody: document.querySelector('[data-conversation-scroll]') === before.scrollBody,
         composerSeat: document.querySelector('[data-composer-seat]') === before.composerSeat,
         textarea: document.querySelector('textarea') === before.textarea,
@@ -154,7 +152,7 @@ describe('web e2e: startup auto-selection', () => {
     // seat with `visibility:hidden`, which Playwright reports as not visible).
     await page.waitForSelector(ROOT_PHASE, { timeout: 15_000 })
     expect(await page.locator(ROOT_PHASE).first().getAttribute('data-phase')).toBe('hero')
-    expect(await page.getByText('Pilot Harness', { exact: true }).isVisible()).toBe(true)
+    expect(await page.getByText('Into the Unknown').isVisible()).toBe(true)
     expect(await page.locator('textarea').first().isVisible()).toBe(true)
 
     releaseHistory()

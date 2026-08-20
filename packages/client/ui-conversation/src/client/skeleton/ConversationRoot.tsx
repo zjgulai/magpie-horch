@@ -98,7 +98,7 @@ export function ConversationRoot({
           : workspaceLabel(cwd)))
 
   const heroWorkspaceRow = (
-    <div className={css.heroWorkspaceRow} data-pilot-hero-workspace-row>
+    <div className={css.heroWorkspaceRow}>
       <WorkspaceChip
         buttonRef={pickerAnchor}
         label={chipTitle}
@@ -151,19 +151,16 @@ export function ConversationRoot({
     overlay: renderSlot('conversation.input.overlay', {}),
     leftItems: zone === undefined ? null : renderSlot('conversation.input.left', zone),
     rightItems: zone === undefined ? null : renderSlot('conversation.input.right', zone),
-    // Blank-session workspace/mode controls remain inside the composer card.
-    // Active-session ambient entries move into the Context popover so no
-    // secondary strip appears below the prompt.
-    footer: hero ? heroWorkspaceRow : null,
-    contextItems: !hero && zone !== undefined
-      ? renderSlot('conversation.composer.dock', zone)
-      : null,
+    // Stats band under the card, inside the bar's width column so both
+    // share one constraint (composer.dock = stats-line family).
+    footer: !hero && zone !== undefined ? renderSlot('conversation.composer.dock', zone) : null,
   })
 
   const composerBar = (
-    <div className={clsx(css.composerStack, hero && css.composerHero)} data-pilot-composer={hero ? 'hero' : 'active'}>
+    <div className={clsx(css.composerStack, hero && css.composerHero)}>
       {hero && <HeroGlow className={css.heroGlow} />}
-      {hero && <HeroShell t={t} />}
+      {hero && <HeroShell t={t} renderSlot={renderSlot} />}
+      {hero && heroWorkspaceRow}
       {zone !== undefined && renderSlot('conversation.input.dock', zone)}
       {inputBar}
     </div>
@@ -187,7 +184,7 @@ export function ConversationRoot({
   )
 
   return (
-    <div className={css.root} data-phase={phase} data-pilot-conversation>
+    <div className={css.root} data-phase={phase}>
       {renderSlot('conversation.session.header', {})}
       <div className={css.scrollBody} data-conversation-scroll="">
         {renderSlot('conversation.session', {})}
