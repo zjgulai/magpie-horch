@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-desktop",
-  "description": "CodePilot-style desktop shell for DeepSeek Harness",
+  "description": "Pilot Harness desktop shell for DeepSeek Harness",
   "version": "0.1.0-rc.8-pilot.1",
   "publishConfig": {
     "access": "public"

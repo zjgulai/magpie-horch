@@ -1,4 +1,4 @@
-appId: com.codepilot.pilotharness
+appId: app.op7418.pilot-harness
 productName: Pilot Harness
 executableName: pilot-harness
 afterSign: scripts/after-sign.cjs
