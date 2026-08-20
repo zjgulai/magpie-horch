@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { CodePilotIcon, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
+import { IconFolderOpen16, Tooltip } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { WorktreePanelController } from './controller.ts'
 import type { NS } from './locales.ts'
@@ -22,7 +22,7 @@ export function WorktreeHeaderToggle({ controller, t }: WorktreeHeaderToggleProp
         data-beautifului="header-file-toggle"
         onClick={controller.toggle}
       >
-        <CodePilotIcon name="folder_open" size={14} />
+        <IconFolderOpen16 size={14} />
         <span>{t('toggle')}</span>
       </button>
     </Tooltip>

@@ -39,9 +39,9 @@ export function apply(ctx: ClientContext): void {
     call<WorktreeListing>(WORKTREE_LIST_ENDPOINT, request, signal)
   const mutateWorktree = (mutation: WorktreeMutation, signal?: AbortSignal) =>
     call<WorktreeMutationResult>(WORKTREE_MUTATE_ENDPOINT, mutation, signal)
-  const controller = new WorktreePanelController((open) => {
-    if (open) ctx.layout.openRightSidebar?.()
-    else ctx.layout.closeRightSidebar?.()
+  const controller = new WorktreePanelController((_open) => {
+    // rc.8: ILayout no longer has openRightSidebar/closeRightSidebar
+    // Controller manages state only; rendering happens through conversation.view slot
   })
   ctx.effect(() => () => { controller.close() }, 'ui-worktree: release dock width on dispose')
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-worktree: dictionaries')

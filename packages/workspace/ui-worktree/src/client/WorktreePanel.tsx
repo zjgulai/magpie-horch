@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties, FormEvent, KeyboardEvent, ReactNode } from 'react'
 import {
-  CodePilotIcon, IconChevronDownOutline14, IconChevronRightOutline14, Menu, Tooltip,
+  IconChevronDownOutline14, IconChevronRightOutline14, Menu, Tooltip,
+  IconFolderOpen16, IconFolderClose16, IconEllipsisOutline16, IconPlusOutline16,
+  IconRefreshOutline16, IconCloseOutline16, IconEditOutline16, IconPaperclipOutline16,
+  IconRightUpOutline16, IconBrowseOutline16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { resolveWorkspacePath, type SessionId } from '@deepseek-ai/dsh-client-runtime/client'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -18,7 +21,7 @@ import css from './WorktreePanel.module.css'
 interface PendingCreate { readonly kind: 'file' | 'directory'; readonly parent: string }
 interface PendingRename { readonly path: string; readonly current: string }
 
-export type WorktreePanelProps = PropsRuntime<'shell.right-sidebar'>
+export type WorktreePanelProps = PropsRuntime<'conversation.view'>
   & PropsLocale<typeof NS>
   & {
     controller: WorktreePanelController
@@ -165,18 +168,18 @@ export function WorktreePanel({
         {
           id: 'open',
           label: directory ? t('action.openFolder') : t('action.openFile'),
-          icon: <CodePilotIcon name="external" size={16} />,
+          icon: <IconRightUpOutline16 size={16} />,
         },
         {
           id: 'add-to-input',
           label: t('action.addToInput'),
-          icon: <CodePilotIcon name="attachment" size={16} />,
+          icon: <IconPaperclipOutline16 size={16} />,
           disabled: currentSession === undefined,
         },
         {
           id: 'rename',
           label: t('action.rename'),
-          icon: <CodePilotIcon name="edit" size={16} />,
+          icon: <IconEditOutline16 size={16} />,
         },
       ]
       return (
@@ -198,7 +201,9 @@ export function WorktreePanel({
                 <span className={css.chevron}>
                   {directory ? isExpanded ? <IconChevronDownOutline14 /> : <IconChevronRightOutline14 /> : null}
                 </span>
-                <CodePilotIcon name={directory ? isExpanded ? 'folder_open' : 'folder' : 'file'} size={15} />
+                {directory
+                  ? (isExpanded ? <IconFolderOpen16 size={15} /> : <IconFolderClose16 size={15} />)
+                  : <IconBrowseOutline16 size={15} />}
                 <span className={css.name}>{entry.name}</span>
               </button>
               <Menu
@@ -226,7 +231,7 @@ export function WorktreePanel({
                       setMenuPath(current => current === entry.path ? null : entry.path)
                     }}
                   >
-                    <CodePilotIcon name="more" size={16} />
+                    <IconEllipsisOutline16 size={16} />
                   </button>
                 )}
               />
@@ -257,16 +262,16 @@ export function WorktreePanel({
         </div>
         <div className={css.toolbar}>
           <Tooltip label={t('action.newFile')} delayMs={450}>
-            <button type="button" disabled={targetId === undefined} aria-label={t('action.newFile')} onClick={() => { setCreate({ kind: 'file', parent: '' }); setDraft('') }}><CodePilotIcon name="plus" size={15} /></button>
+            <button type="button" disabled={targetId === undefined} aria-label={t('action.newFile')} onClick={() => { setCreate({ kind: 'file', parent: '' }); setDraft('') }}><IconPlusOutline16 size={15} /></button>
           </Tooltip>
           <Tooltip label={t('action.newFolder')} delayMs={450}>
-            <button type="button" disabled={targetId === undefined} aria-label={t('action.newFolder')} onClick={() => { setCreate({ kind: 'directory', parent: '' }); setDraft('') }}><CodePilotIcon name="folder_add" size={15} /></button>
+            <button type="button" disabled={targetId === undefined} aria-label={t('action.newFolder')} onClick={() => { setCreate({ kind: 'directory', parent: '' }); setDraft('') }}><IconPlusOutline16 size={15} /></button>
           </Tooltip>
           <Tooltip label={t('action.refresh')} delayMs={450}>
-            <button type="button" disabled={targetId === undefined} aria-label={t('action.refresh')} onClick={refresh}><CodePilotIcon name="refresh" size={15} /></button>
+            <button type="button" disabled={targetId === undefined} aria-label={t('action.refresh')} onClick={refresh}><IconRefreshOutline16 size={15} /></button>
           </Tooltip>
           <Tooltip label={t('action.close')} delayMs={450}>
-            <button type="button" aria-label={t('action.close')} onClick={controller.close}><CodePilotIcon name="cancel" size={15} /></button>
+            <button type="button" aria-label={t('action.close')} onClick={controller.close}><IconCloseOutline16 size={15} /></button>
           </Tooltip>
         </div>
       </header>
@@ -276,7 +281,7 @@ export function WorktreePanel({
         <div className={css.tree}>
           {create !== null && (
             <form className={css.createForm} onSubmit={submitCreate}>
-              <CodePilotIcon name={create.kind === 'file' ? 'file' : 'folder'} size={15} />
+              {create.kind === 'file' ? <IconBrowseOutline16 size={15} /> : <IconFolderClose16 size={15} />}
               <input autoFocus value={draft} aria-label={create.kind === 'file' ? t('form.filePlaceholder') : t('form.folderPlaceholder')} placeholder={create.kind === 'file' ? t('form.filePlaceholder') : t('form.folderPlaceholder')} onKeyDown={editorKey} onChange={(event) => { setDraft(event.currentTarget.value) }} />
               <button type="submit">{t('form.create')}</button>
               <button type="button" onClick={cancelEditor}>{t('form.cancel')}</button>
