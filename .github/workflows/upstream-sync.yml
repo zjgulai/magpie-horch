@@ -23,7 +23,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       UPSTREAM_REPOSITORY: deepseek-ai/deepseek-harness
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
