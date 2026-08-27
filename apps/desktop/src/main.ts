@@ -14,6 +14,19 @@ import {
   shell,
 } from 'electron'
 import { extractHarnessServerUrl, LineBuffer } from './server-url.ts'
+import {
+  startNotifications,
+  stopNotifications,
+  resetNotifications,
+  getNotificationPrefs,
+  setNotificationPrefs,
+} from './notifications.ts'
+import {
+  startVersionCheck,
+  stopVersionCheck,
+  getLatestUpdate,
+  onNewVersionFound,
+} from './version-check.ts'
 
 const STARTUP_TIMEOUT_MS = 60_000
 const MAX_LOG_LINES = 300
@@ -316,6 +329,9 @@ async function restartHarness(): Promise<void> {
       const url = await launchHarness()
       harnessUrl = url
       if (mainWindow !== null && !mainWindow.isDestroyed()) await mainWindow.loadURL(url)
+      // Start desktop notification subscriber once Harness is ready
+      resetNotifications()
+      startNotifications(url)
     } catch (error) {
       rememberLog('desktop', `startup failed: ${String(error)}`)
       await showShell('failed', error instanceof Error ? error.message : String(error))
@@ -338,18 +354,32 @@ async function pickDirectory(): Promise<string | null> {
 }
 
 function installMenu(): void {
+  function buildHarnessSubmenu(): Electron.MenuItemConstructorOptions[] {
+    const update = getLatestUpdate()
+    const updateItem: Electron.MenuItemConstructorOptions[] = update !== null
+      ? [
+        {
+          label: `新版本可用：${update.tag}`,
+          click: () => { void shell.openExternal(update.url) },
+        },
+        { type: 'separator' },
+      ]
+      : []
+    return [
+      ...updateItem,
+      { label: 'Restart Harness', accelerator: 'CmdOrCtrl+Shift+R', click: () => { void restartHarness() } },
+      { label: 'Open Data Folder', click: () => { void shell.openPath(resolveDshHome()) } },
+      { type: 'separator' },
+      { role: process.platform === 'darwin' ? 'close' : 'quit' },
+    ]
+  }
   const template: Electron.MenuItemConstructorOptions[] = [
     ...(process.platform === 'darwin'
       ? [{ role: 'appMenu' as const }]
       : []),
     {
       label: 'Harness',
-      submenu: [
-        { label: 'Restart Harness', accelerator: 'CmdOrCtrl+Shift+R', click: () => { void restartHarness() } },
-        { label: 'Open Data Folder', click: () => { void shell.openPath(resolveDshHome()) } },
-        { type: 'separator' },
-        { role: process.platform === 'darwin' ? 'close' : 'quit' },
-      ],
+      submenu: buildHarnessSubmenu(),
     },
     { role: 'editMenu' },
     {
@@ -397,8 +427,13 @@ if (!app.requestSingleInstanceLock()) {
       return (await shell.openPath(resolveDshHome())) === ''
     })
     ipcMain.handle('pilot-harness:copy-diagnostics', () => { clipboard.writeText(diagnostics()); return true })
+    ipcMain.handle('pilot-harness:get-notification-prefs', () => getNotificationPrefs())
+    ipcMain.handle('pilot-harness:set-notification-prefs', (_event, prefs: { onTurnCompletion?: boolean; onTurnFailure?: boolean }) => { setNotificationPrefs(prefs) })
+    ipcMain.handle('pilot-harness:get-update-info', () => getLatestUpdate())
     nativeTheme.on('updated', applyTitleBarTheme)
     installMenu()
+    startVersionCheck()
+    onNewVersionFound(() => { installMenu() })
     mainWindow = createWindow()
     await showShell('loading')
     await restartHarness()
@@ -416,6 +451,8 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('before-quit', () => {
     quitting = true
+    stopNotifications()
+    stopVersionCheck()
     if (harnessProcess !== null && harnessProcess.exitCode === null) {
       terminateHarnessProcess(harnessProcess, false)
     }
