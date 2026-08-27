@@ -53,3 +53,18 @@
       # Optional sidebar metadata: folds the Schedule plugin's persisted event
       # stream and contributes one owner-styled row to a Session hover card.
       name: '@deepseek-ai/dsh-ui-schedule-summary'
+    - id: dsh-ui-provider-catalog
+      name: '@local/dsh-ui-provider-catalog'
+    - id: dsh-ui-schedule-summary-local
+      name: '@local/dsh-ui-schedule-summary'
+    - id: better-sidebar
+      name: 'dsh-better-sidebar'
+      disabled: !!js "[...ctx.loader.entries()].some((e) => e.options.name === 'dsh-better-sidebar' && e.options.id !== 'better-sidebar' && !e.disabled)"
+    - id: dsh-git-remotes
+      name: 'dsh-git-remotes'
+    - id: dsh-file-review-tab
+      name: 'dsh-file-review-tab'
+    - id: dsh-sidebar-qa
+      name: 'dsh-sidebar-qa'
+    - id: dsh-sentinel
+      name: 'dsh-sentinel'

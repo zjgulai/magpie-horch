@@ -38,6 +38,8 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`@earendil-works/pi-ai`](https://github.com/earendil-works/pi) | MIT |
 | [`@joplin/turndown-plugin-gfm`](https://github.com/laurent22/joplin-turndown-plugin-gfm) | MIT |
 | [`@jridgewell/gen-mapping`](https://github.com/jridgewell/sourcemaps) | MIT |
+| [`@local/dsh-ui-provider-catalog`](https://github.com/op7418/pilot-harness) | MIT |
+| [`@local/dsh-ui-schedule-summary`](https://github.com/op7418/pilot-harness) | MIT |
 | [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) | MIT |
 | [`@openai/codex`](https://github.com/openai/codex) | Apache-2.0 |
 | [`@opentelemetry/api`](https://github.com/open-telemetry/opentelemetry-js) | Apache-2.0 |
@@ -56,6 +58,11 @@ External packages that a workspace package resolves at runtime. The tier covers 
 | [`clsx`](https://github.com/lukeed/clsx) | MIT |
 | [`commander`](https://github.com/tj/commander.js) | MIT |
 | [`diff`](https://github.com/kpdecker/jsdiff) | BSD-3-Clause |
+| [`dsh-better-sidebar`](https://github.com/omdsh-dev/DSH-better-sidebar) | MIT |
+| [`dsh-file-review-tab`](https://github.com/Lzh3070/dsh-file-review-tab) | MIT |
+| [`dsh-git-remotes`](https://github.com/yq04/dsh-git-remotes) | BSD-3-Clause |
+| [`dsh-sentinel`](https://github.com/fuhefei/dsh-sentinel) | BSD-3-Clause |
+| [`dsh-sidebar-qa`](https://github.com/ChenRuoT/dsh-sidebar-qa) | MIT |
 | [`e2b`](https://github.com/e2b-dev/e2b) | MIT |
 | [`eventsource-parser`](https://github.com/rexxars/eventsource-parser) | MIT |
 | [`fflate`](https://github.com/101arrowz/fflate) | MIT |

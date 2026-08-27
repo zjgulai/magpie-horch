@@ -60,7 +60,14 @@
     "@deepseek-ai/dsh-timeout": "workspace:^",
     "@deepseek-ai/dsh-ui-schedule-summary": "workspace:^",
     "@deepseek-ai/dsh-ui-worktree": "workspace:^",
-    "@deepseek-ai/dsh-workflow": "workspace:^"
+    "@deepseek-ai/dsh-workflow": "workspace:^",
+    "@local/dsh-ui-provider-catalog": "link:../../../plugins/dsh-ui-provider-catalog",
+    "@local/dsh-ui-schedule-summary": "link:../../../plugins/dsh-ui-schedule-summary",
+    "dsh-better-sidebar": "^0.16.1",
+    "dsh-file-review-tab": "^0.2.0",
+    "dsh-git-remotes": "link:../../../plugins/dsh-git-remotes",
+    "dsh-sentinel": "^0.11.0",
+    "dsh-sidebar-qa": "^0.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.20.0",

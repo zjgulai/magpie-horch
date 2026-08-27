@@ -76,6 +76,11 @@ const OVERRIDES: Record<string, { license?: string; repo?: string }> = {
   // No repository field in the published manifest.
   '@hugeicons/core-free-icons': { repo: 'https://github.com/hugeicons/hugeicons' },
   'node-addon-require-builtin': { repo: 'https://www.npmjs.com/package/node-addon-require-builtin' },
+  // Local plugins (link: deps) — metadata supplied directly since pnpm virtual store has no entry.
+  '@local/dsh-ui-provider-catalog': { license: 'MIT', repo: 'https://github.com/op7418/pilot-harness' },
+  '@local/dsh-ui-schedule-summary': { license: 'MIT', repo: 'https://github.com/op7418/pilot-harness' },
+  'dsh-git-remotes': { license: 'BSD-3-Clause', repo: 'https://github.com/yq04/dsh-git-remotes' },
+  'dsh-sentinel': { repo: 'https://github.com/fuhefei/dsh-sentinel' },
 }
 
 /**
