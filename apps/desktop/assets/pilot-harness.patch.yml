@@ -1,6 +1,6 @@
-# Pilot Harness desktop model profile.
+# Magpie Horch desktop model profile.
 #
-# Keep DeepSeek Harness's adapter contract and settings hot-reload intact, but
+# Keep Magpie Horch's adapter contract and settings hot-reload intact, but
 # replace the single-vendor route with the configurable pi-ai provider plugin.
 # The route starts dormant until the user connects a provider on the Providers
 # page; image-capable models then flow through llm-pi-ai + attachment-local.

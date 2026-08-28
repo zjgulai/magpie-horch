@@ -99,7 +99,7 @@ function fetchLatestRelease(): Promise<GitHubRelease | null> {
       {
         method: 'GET',
         headers: {
-          'User-Agent': `Pilot-Harness/${app.getVersion()}`,
+          'User-Agent': `Magpie-Horch/${app.getVersion()}`,
           Accept: 'application/vnd.github+json',
         },
         timeout: REQUEST_TIMEOUT_MS,

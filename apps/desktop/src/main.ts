@@ -51,7 +51,7 @@ function rememberLog(source: 'stdout' | 'stderr' | 'desktop', line: string): voi
 
 function diagnostics(): string {
   return [
-    `Pilot Harness ${app.getVersion()}`,
+    `Magpie Horch ${app.getVersion()}`,
     `platform=${process.platform} arch=${process.arch}`,
     `electron=${process.versions.electron}`,
     `dshHome=${resolveDshHome()}`,
@@ -148,7 +148,7 @@ function createWindow(): BrowserWindow {
     minWidth: 940,
     minHeight: 640,
     show: false,
-    title: 'Pilot Harness',
+    title: 'Magpie Horch',
     icon: applicationIconPath(),
     backgroundColor: process.platform === 'darwin'
       ? '#00ffffff'
@@ -238,7 +238,7 @@ function terminateHarnessProcess(child: ChildProcessWithoutNullStreams, force: b
 function launchHarness(): Promise<string> {
   const entry = resolveDshEntry()
   if (!existsSync(entry)) {
-    return Promise.reject(new Error(`DeepSeek Harness runtime is missing: ${entry}. Run pnpm run build before desktop:dev.`))
+    return Promise.reject(new Error(`Magpie Horch runtime is missing: ${entry}. Run pnpm run build before desktop:dev.`))
   }
 
   const dshHome = resolveDshHome()
@@ -275,7 +275,7 @@ function launchHarness(): Promise<string> {
     const timer = setTimeout(() => {
       if (settled) return
       settled = true
-      rejectLaunch(new Error(`DeepSeek Harness did not become ready within ${STARTUP_TIMEOUT_MS / 1_000} seconds.`))
+      rejectLaunch(new Error(`Magpie Horch did not become ready within ${STARTUP_TIMEOUT_MS / 1_000} seconds.`))
     }, STARTUP_TIMEOUT_MS)
 
     const acceptLine = (source: 'stdout' | 'stderr', line: string): void => {
@@ -312,10 +312,10 @@ function launchHarness(): Promise<string> {
       if (!settled) {
         settled = true
         clearTimeout(timer)
-        rejectLaunch(new Error(`DeepSeek Harness exited before startup (code ${String(code)}).`))
+        rejectLaunch(new Error(`Magpie Horch exited before startup (code ${String(code)}).`))
         return
       }
-      void showShell('failed', `DeepSeek Harness stopped unexpectedly (code ${String(code)}).`)
+      void showShell('failed', `Magpie Horch stopped unexpectedly (code ${String(code)}).`)
     })
   })
 }
@@ -367,7 +367,7 @@ function installMenu(): void {
       : []
     return [
       ...updateItem,
-      { label: 'Restart Harness', accelerator: 'CmdOrCtrl+Shift+R', click: () => { void restartHarness() } },
+      { label: 'Restart Magpie Horch', accelerator: 'CmdOrCtrl+Shift+R', click: () => { void restartHarness() } },
       { label: 'Open Data Folder', click: () => { void shell.openPath(resolveDshHome()) } },
       { type: 'separator' },
       { role: process.platform === 'darwin' ? 'close' : 'quit' },
@@ -378,7 +378,7 @@ function installMenu(): void {
       ? [{ role: 'appMenu' as const }]
       : []),
     {
-      label: 'Harness',
+      label: 'Magpie Horch',
       submenu: buildHarnessSubmenu(),
     },
     { role: 'editMenu' },
@@ -400,7 +400,7 @@ function installMenu(): void {
     {
       role: 'help',
       submenu: [
-        { label: 'DeepSeek Harness on GitHub', click: () => { void shell.openExternal('https://github.com/deepseek-ai/deepseek-harness') } },
+        { label: 'Magpie Horch on GitHub', click: () => { void shell.openExternal('https://github.com/zjgulai/pilot-harness') } },
       ],
     },
   ]

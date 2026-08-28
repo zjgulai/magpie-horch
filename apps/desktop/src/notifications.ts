@@ -16,8 +16,8 @@ import { Notification } from 'electron'
 
 /** User-visible notification copy. */
 const COPY = {
-  turnCompleted: { title: 'Pilot Harness', body: '任务已完成' },
-  turnFailed: { title: 'Pilot Harness', body: '任务失败' },
+  turnCompleted: { title: 'Magpie Horch', body: '任务已完成' },
+  turnFailed: { title: 'Magpie Horch', body: '任务失败' },
 } as const
 
 /** Whether the OS supports Electron notifications (always true on macOS / Windows). */
