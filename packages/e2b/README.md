@@ -1,3 +1,7 @@
+> **范围说明**: 本模块为 upstream deepseek-ai/deepseek-harness 保留组件，非 Magpie Horch Desktop 核心路径。Magpie Horch 品牌化产品不依赖此模块。
+>
+> **Scope note**: This module is retained from the upstream deepseek-ai/deepseek-harness. It is not part of the Magpie Horch Desktop core product path.
+
 # e2b/ — E2B remote runtime family
 
 English | [中文](README.zh.md)

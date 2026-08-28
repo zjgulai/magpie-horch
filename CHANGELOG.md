@@ -1,13 +1,13 @@
-# Changelog — Pilot Harness
+# Changelog — Magpie Horch
 
-Pilot Harness 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 的桌面发行版，每次 upstream 发布新 RC 版本后，在此仓库同步合并并打包发布。
+Magpie Horch 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 的桌面端 AI Agent Harness 产品，持续跟进 upstream 版本迭代，并融合自研功能组件。
 
 ---
 
-## [0.1.1-rc.2-pilot.1] — 2026-08-27
+## [magpie-horch-v0.1.1-rc.2-pilot.1] — 2026-08-28
 
 **基座版本**: deepseek-harness `dsh-v0.1.1-rc.2`
-**DMG 产物**: `Pilot Harness-0.1.1-rc.2-pilot.1-arm64.dmg`
+**DMG 产物**: `Magpie-Horch-v0.1.1-rc.2-pilot.1-arm64.dmg`
 **SHA 基座 commit**: `aa6c361a9`
 
 ### 新增（来自 upstream rc.1 + rc.2）
@@ -19,12 +19,12 @@ Pilot Harness 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepse
 - **Bubblewrap 沙箱**：安全加固，修复沙箱逃逸风险
 - **UX 优化**：对话流、工具调用渲染改进
 
-### Pilot 保留变更
+### Magpie Horch 品牌变更
 
-- 图标：op7418 GitHub 头像（1024×1024）
-- 产品名：`Pilot Harness`（appId: `app.op7418.pilot-harness`）
-- Router J-Space 插件（experimental）
-- 品牌主题 CSS（`brand-icon.module.css`）
+- 产品名：`Magpie Horch`，∞ 橙金色图标
+- 几何抽象喜鹊 Logo + HORCH 徽章 Wordmark
+- 集成：dsh-better-sidebar、dsh-git-remotes、dsh-sentinel 等自研插件
+- 完整 UI 品牌化（窗口标题/菜单/通知/favicon/app icon）
 
 ### 构建信息
 
@@ -75,8 +75,8 @@ Pack date: 2026-08-20
 |---|---|---|
 | 基座版本 | `dsh-vX.Y.Z-rc.N` | `dsh-v0.1.1-rc.2` |
 | Pilot 版本 | `X.Y.Z-rc.N-pilot.M` | `0.1.1-rc.2-pilot.1` |
-| DMG 文件名 | `Pilot Harness-X.Y.Z-rc.N-pilot.M-arch.dmg` | `Pilot Harness-0.1.1-rc.2-pilot.1-arm64.dmg` |
-| Git tag | `vX.Y.Z-rc.N-pilot.M` | `v0.1.1-rc.2-pilot.1` |
+| DMG 文件名 | `Magpie-Horch-vX.Y.Z-rc.N-pilot.M-arch.dmg` | `Magpie-Horch-v0.1.1-rc.2-pilot.1-arm64.dmg` |
+| Git tag | `magpie-horch-vX.Y.Z-rc.N-pilot.M` | `magpie-horch-v0.1.1-rc.2-pilot.1` |
 
 - **基座追踪**：`.github/upstream.json` 记录当前追踪的 upstream tag/commit
 - **自动同步**：`upstream-sync.yml` 每日 09:00 (CST) 检查 upstream 新 tag

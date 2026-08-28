@@ -1,59 +1,72 @@
-# DeepSeek Harness
+# Magpie Horch
 
-English | [中文](README.zh.md)
+**Magpie Horch** 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 构建的桌面端 AI Agent Harness 产品，持续跟进 upstream 版本迭代，并融合自研功能组件。
 
-DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
+> Magpie（喜鹊）= 聪明善记、衔接信息 · Horch（德语）= 精准聆听 — 善于聆听、精准衔接的 AI 助手
 
-It uses an architecture where **everything is a plugin**, and is powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://github.com/cordiverse/paper).
+## 当前版本
 
-## Developer preview
+| 字段 | 值 |
+|------|-----|
+| 产品版本 | `v0.1.1-rc.2-pilot.1` |
+| 基座 upstream | `deepseek-harness dsh-v0.1.1-rc.2` |
+| 发布平台 | macOS (Apple Silicon) |
+| App 图标 | ∞ 橙金色（`#E8920A`） |
 
-DeepSeek Harness is currently in _developer preview_ and is iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+## 下载
 
-## Run
+前往 [Releases](https://github.com/zjgulai/pilot-harness/releases) 下载最新 DMG。
 
-### Run from `npm`
+## 项目定位
 
-Install `Node.js`, then run:
+本仓库承担三个职责：
 
-```sh
-npx @deepseek-ai/dsh web
+1. **Magpie Horch 产品迭代** — upstream RC 合并、品牌定制、桌面打包发布
+2. **自研插件融合** — `dsh-better-sidebar`、`dsh-git-remotes`、`dsh-sentinel` 等 harness 插件集成
+3. **组件扩展开发** — 在 harness 架构上开发新的 UI 插件和 Agent 能力组件
+
+## 架构简述
+
+```
+apps/desktop/     — Electron 桌面壳，打包为 DMG/ZIP 分发
+apps/web/         — Web UI（由 desktop 内嵌，也可独立运行）
+apps/cli/         — dsh CLI，启动本地 web 服务
+packages/         — 核心能力包（会话、工具、插件系统、UI 组件）
+vendor/           — vendored Cordis 框架
 ```
 
-The command starts the Web UI at `http://127.0.0.1:3080` by default and opens it in the default browser for a local launch. An SSH launch only prints the host URL because the SSH client or editor owns the local forwarded address. Pass `--no-open` to run the server without opening a browser. See [Web UI guide](docs/user/guide/index.md).
+核心架构：**一切皆插件**（基于 [Cordis](https://github.com/cordiverse/cordis)），所有 Agent 能力（会话、工具、LLM 适配器、UI 组件）均作为 Cordis 插件挂载。
 
-### Run from source
-
-To run from a repository checkout:
+## 开发
 
 ```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
+git clone https://github.com/zjgulai/pilot-harness.git
+cd pilot-harness
 pnpm install
 pnpm run build
-pnpm dsh web
+# 启动桌面开发模式
+pnpm --filter @deepseek-ai/dsh-desktop run dev
 ```
 
-`pnpm run build` prepares the repository artifacts. `pnpm dsh web` uses those built artifacts without rebuilding.
+详见 [AGENTS.md](AGENTS.md)（AI 协作规范）和 [VERSIONING.md](VERSIONING.md)（版本管理规范）。
 
-## Community and support
+## Upstream 跟进
 
-- Feel free to submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).
-- Add the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic to your plugin repository for discoverability.
-- Join <a href="https://discord.gg/Ycq5dCaS4">DeepSeek Harness Discord community</a>.
+本仓库追踪 upstream `deepseek-ai/deepseek-harness`。每次 upstream 发布新 RC 后：
 
-## Contributing
+1. `git fetch upstream && git merge upstream/dsh-vX.Y.Z`
+2. 解决冲突，保留 Magpie Horch 定制
+3. 更新 `.github/upstream.json`
+4. 打 tag `magpie-horch-vX.Y.Z-pilot.N` 并构建新 DMG
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+## 版本命名
 
-## Development
+```
+magpie-horch-v{upstream_version}-pilot.{N}
+```
 
-Start with the [development guide](docs/development.md) and [architecture documentation](docs/architecture.md).
-
-For agents, follow [AGENTS.md](AGENTS.md).
+示例：`magpie-horch-v0.1.1-rc.2-pilot.1`
 
 ## License
 
-[MIT](LICENSE)
-
-Third-party dependencies and their licenses are disclosed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[MIT](LICENSE) · Third-party notices: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)

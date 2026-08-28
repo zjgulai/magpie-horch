@@ -1,6 +1,6 @@
-appId: app.op7418.pilot-harness
-productName: Pilot Harness
-executableName: pilot-harness
+appId: ai.magpiehorch.desktop
+productName: Magpie Horch
+executableName: magpie-horch
 afterSign: scripts/after-sign.cjs
 # DSH materializes profile plugin links back to package directories. Those
 # links must target real filesystem paths; an asar archive is not traversable
@@ -47,15 +47,15 @@ linux:
   artifactName: "${productName}-${version}-${arch}.${ext}"
   desktop:
     entry:
-      Name: Pilot Harness
-      Comment: Desktop client for DeepSeek Harness
+      Name: Magpie Horch
+      Comment: Magpie Horch — AI Agent Harness Desktop
       Categories: Development;IDE;
-      StartupWMClass: pilot-harness
+      StartupWMClass: magpie-horch
   target:
     - AppImage
     - deb
     - rpm
 deb:
-  packageName: pilot-harness
+  packageName: magpie-horch
 rpm:
-  packageName: pilot-harness
+  packageName: magpie-horch
