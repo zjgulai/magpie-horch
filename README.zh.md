@@ -23,7 +23,7 @@
 
 本应用使用 **ad-hoc 签名**，尚未通过 Apple 公证。macOS 13 及以上（含 macOS 26 Tahoe）直接打开会提示「文件已损坏」，请按以下步骤操作：
 
-1. 将 `Magpie Horch.app` 从 DMG 拖入 `/Applications`
+1. 下载 DMG，挂载后将 `magpie-horch.app` 拖入 `/Applications`
 2. 打开「终端」，执行：
 
 ```bash

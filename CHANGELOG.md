@@ -31,13 +31,34 @@ Magpie Horch 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepsee
 | `llm-pi-ai` catalog gate 补全 `thinking.budget` / `thinkingTokenBudgetField` / `allowedFallbackModels` | llm-pi-ai/catalog.ts |
 | pnpm overrides 补全，防止未发布 alpha 版本解析失败 | package.json |
 
+### 启动修复（code 1 崩溃）
+
+alpha.1 合并后 `apps/desktop/package.json` 未同步上游依赖变动，导致 `dsh web` 子进程以 `code 1` 退出。同一版本号内追加修复，**无需重新打 tag**。
+
+| 根因 | 修复 |
+|------|------|
+| `package.json` 缺少 89 个 alpha.1 运行时依赖（`dsh-settings`、`dsh-jobs`、`dsh-credentials` 等） | 从 `apps/cli/package.json` 同步全量 runtime deps |
+| alpha.1 新增包（`ui-session`、`ui-approval`、`ui-chat`、`api-session-controller` 等）未构建 client bundle | `tsdown` 重建 10 个包的 `lib/` |
+| `dsh-client-connection/lib` stale 内容引用已删除的 `dsh-host-apiproxy` | 重建 `client-connection` |
+
+验证：`dsh web` 成功启动 `http://127.0.0.1:3080`，4 个 Electron 进程全部正常。
+
+### 安装说明（macOS 26 Tahoe）
+
+macOS 26 Gatekeeper 拒绝 ad-hoc 签名应用，打开时提示「文件已损坏」。解决方法：
+
+```bash
+# 将 magpie-horch.app 拖入 /Applications 后执行：
+xattr -cr /Applications/magpie-horch.app
+```
+
 ### 构建信息
 
 ```
 electron-builder version: 26.15.3
 Electron: 40.10.6
 Target: macOS arm64 DMG + ZIP
-Pack date: 2026-08-29
+Pack date: 2026-08-29 (修复重打包)
 ```
 
 ---

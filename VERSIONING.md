@@ -71,6 +71,8 @@ magpie-horch-v{upstream_version}-pilot.{N}
    # 在 apps/desktop 打包
    pnpm --filter @deepseek-ai/dsh-desktop run pack
 
+   # 注意：打包前需确认 apps/desktop/package.json 已包含 cli/package.json 的全量 runtime deps
+
    # 打 tag 并推送
    git tag magpie-horch-vX.Y.Z-rc.N-pilot.1
    git push zjgulai main --tags
