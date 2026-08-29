@@ -10,9 +10,9 @@ magpie-horch-v{upstream_version}-pilot.{N}
 |------|------|------|
 | upstream 版本 | `{major}.{minor}.{patch}-rc.{N}` | `0.1.1-rc.2` |
 | pilot 迭代号 | `pilot.{N}`（从 1 开始） | `pilot.1` |
-| 完整版本 | `magpie-horch-v{upstream}-pilot.{N}` | `magpie-horch-v0.1.1-rc.2-pilot.1` |
-| Git tag | 同完整版本 | `magpie-horch-v0.1.1-rc.2-pilot.1` |
-| DMG 文件名 | `Magpie-Horch-v{upstream}-pilot.{N}-{arch}.dmg` | `Magpie-Horch-v0.1.1-rc.2-pilot.1-arm64.dmg` |
+| 完整版本 | `magpie-horch-v{upstream}-pilot.{N}` | `magpie-horch-v0.1.2-alpha.1-pilot.1` |
+| Git tag | 同完整版本 | `magpie-horch-v0.1.2-alpha.1-pilot.1` |
+| DMG 文件名 | `Magpie-Horch-v{upstream}-pilot.{N}-{arch}.dmg` | `Magpie-Horch-v0.1.2-alpha.1-pilot.1-arm64.dmg` |
 
 ## Pilot 迭代号规则
 
@@ -24,7 +24,7 @@ magpie-horch-v{upstream_version}-pilot.{N}
 
 | 字段 | 值 |
 |------|-----|
-| 当前产品版本 | `magpie-horch-v0.1.1-rc.2-pilot.1` |
+| 当前产品版本 | `magpie-horch-v0.1.2-alpha.1-pilot.1` |
 | 当前 upstream 基座 | `dsh-v0.1.1-rc.2` (`b150a551b8`) |
 | appId | `ai.magpiehorch.desktop` |
 | productName | `Magpie Horch` |

@@ -4,6 +4,44 @@ Magpie Horch 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepsee
 
 ---
 
+## [magpie-horch-v0.1.2-alpha.1-pilot.1] — 2026-08-29
+
+**基座版本**: deepseek-harness `dsh-v0.1.2-alpha.1`
+**DMG 产物**: `Magpie Horch-0.1.2-alpha.1-pilot.1-arm64.dmg`
+**SHA 基座 commit**: `cd5ef8148`
+
+### 新增（来自 upstream alpha.1）
+
+- **ACP 重构**：Agent Client Protocol 大幅重写，新增 MCP 协议支持、会话快照流、model-control 扩展
+- **API Gateway 重写**：连接层全面重构，引入 stream-protocol / stream-server / stream-client，WebSocket downlink 退出
+- **Session Controller**：`dsh-client-runtime` 拆分为 `dsh-api-session-controller` + `dsh-api-workspace-controller`
+- **Webhook 支持**：新增 `webhook/webhook` 和 `webhook/webhook-github` 包，支持 GitHub webhook ingress
+- **code-mode 重命名为 PTC**：全局重命名为 `ptc`（PTC mode）
+- **浏览器认证**：`connection` 包新增 `browser-auth` 模块，支持 cookie 签名会话
+- **新工具包**：`dsh-util-workspace-path`、`dsh-util-crypto`
+- **Subagent lineage**：ui-workspace 新增 subagent lineage 视图
+
+### Pilot 适配（兼容性修复）
+
+| 变更 | 文件 |
+|------|------|
+| `dsh-client-runtime` 移除 → `@deepseek-ai/cordis` (ClientContext) | codepilot-theme / ui-worktree / ui-schedule-summary |
+| `connection.rpc.handle()` options.authority 参数移除 | ui-worktree / ui-schedule-summary host half |
+| `resolveWorkspacePath` 迁移到 `dsh-util-workspace-path` | ui-worktree client |
+| `llm-pi-ai` catalog gate 补全 `thinking.budget` / `thinkingTokenBudgetField` / `allowedFallbackModels` | llm-pi-ai/catalog.ts |
+| pnpm overrides 补全，防止未发布 alpha 版本解析失败 | package.json |
+
+### 构建信息
+
+```
+electron-builder version: 26.15.3
+Electron: 40.10.6
+Target: macOS arm64 DMG + ZIP
+Pack date: 2026-08-29
+```
+
+---
+
 ## [magpie-horch-v0.1.1-rc.2-pilot.1] — 2026-08-28
 
 **基座版本**: deepseek-harness `dsh-v0.1.1-rc.2`

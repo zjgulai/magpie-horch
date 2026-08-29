@@ -10,8 +10,8 @@
 
 | 字段 | 值 |
 |------|-----|
-| 产品版本 | `v0.1.1-rc.2-pilot.1` |
-| 基座 upstream | `deepseek-harness dsh-v0.1.1-rc.2` |
+| 产品版本 | `v0.1.2-alpha.1-pilot.1` |
+| 基座 upstream | `deepseek-harness dsh-v0.1.2-alpha.1` |
 | 发布平台 | macOS (Apple Silicon) |
 | App 图标 | ∞ 橙金色（`#E8920A`） |
 
