@@ -15,9 +15,24 @@ English | [中文](README.zh.md)
 | 发布平台 | macOS (Apple Silicon) |
 | App 图标 | ∞ 橙金色（`#E8920A`） |
 
-## 下载
+## 下载与安装
 
 前往 [Releases](https://github.com/zjgulai/magpie-horch/releases) 下载最新 DMG。
+
+### ⚠️ macOS 安装说明（重要）
+
+本应用使用 **ad-hoc 签名**，尚未通过 Apple 公证。macOS 13 及以上（含 macOS 26 Tahoe）直接打开会提示「文件已损坏」，请按以下步骤操作：
+
+1. 将 `Magpie Horch.app` 从 DMG 拖入 `/Applications`
+2. 打开「终端」，执行：
+
+```bash
+xattr -cr /Applications/Magpie\ Horch.app
+```
+
+3. 双击启动即可。
+
+> 若仍提示无法打开，改用：`sudo xattr -d com.apple.quarantine /Applications/Magpie\ Horch.app`
 
 ## 项目定位
 
