@@ -17,7 +17,7 @@
 
 ## 下载
 
-前往 [Releases](https://github.com/zjgulai/pilot-harness/releases) 下载最新 DMG。
+前往 [Releases](https://github.com/zjgulai/magpie-horch/releases) 下载最新 DMG。
 
 ## 项目定位
 
@@ -42,8 +42,8 @@ vendor/           — vendored Cordis 框架
 ## 开发
 
 ```sh
-git clone https://github.com/zjgulai/pilot-harness.git
-cd pilot-harness
+git clone https://github.com/zjgulai/magpie-horch.git
+cd magpie-horch
 pnpm install
 pnpm run build
 # 启动桌面开发模式
@@ -67,7 +67,7 @@ pnpm --filter @deepseek-ai/dsh-desktop run dev
 magpie-horch-v{upstream_version}-pilot.{N}
 ```
 
-示例：`magpie-horch-v0.1.1-rc.2-pilot.1`
+示例：`magpie-horch-v0.1.2-alpha.1-pilot.1`
 
 ## License
 

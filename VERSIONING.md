@@ -65,7 +65,7 @@ magpie-horch-v{upstream_version}-pilot.{N}
 5. **构建并发布**
 
    ```bash
-   # 在 pilot-harness repo 完成 build
+   # 在 magpie-horch repo 完成 build
    pnpm run build
 
    # 在 apps/desktop 打包
@@ -77,7 +77,7 @@ magpie-horch-v{upstream_version}-pilot.{N}
 
    # 创建 GitHub Release 并上传 DMG
    gh release create magpie-horch-vX.Y.Z-rc.N-pilot.1 \
-     --repo zjgulai/pilot-harness \
+     --repo zjgulai/magpie-horch \
      --title "Magpie Horch vX.Y.Z-rc.N-pilot.1"
    ```
 
