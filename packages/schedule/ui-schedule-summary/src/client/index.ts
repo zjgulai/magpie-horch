@@ -1,6 +1,6 @@
 /** Client half: optional reminder row in the Workspace Session hover summary. */
 
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import { en, NS, zh, type ScheduleSummaryKey } from './locales.ts'
 

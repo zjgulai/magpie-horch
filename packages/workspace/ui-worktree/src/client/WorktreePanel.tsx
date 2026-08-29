@@ -6,7 +6,8 @@ import {
   IconRefreshOutline16, IconCloseOutline16, IconEditOutline16, IconPaperclipOutline16,
   IconRightUpOutline16, IconBrowseOutline16,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { resolveWorkspacePath, type SessionId } from '@deepseek-ai/dsh-client-runtime/client'
+import { resolveWorkspacePath } from '@deepseek-ai/dsh-util-workspace-path'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import {
   type WorktreeListing,

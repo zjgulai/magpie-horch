@@ -10,7 +10,7 @@ Web profile 已经提供完整的 Harness 插件组合，但要求用户安装 N
 
 ## Decision
 
-仓库在 [`apps/desktop`](../../../../apps/desktop/README.md) 下提供 Electron 应用，由它托管构建后的 `dsh web` profile 子进程。Electron 负责原生窗口行为、进程恢复、独立 Harness home 和多平台安装包；CodePilot 视觉主题由一个普通的 Client 插件负责。回环地址上的 Web 进程负责全部应用行为和数据 API。
+仓库在 [`apps/desktop`](../../../../apps/desktop/README.zh.md) 下提供 Electron 应用，由它托管构建后的 `dsh web` profile 子进程。Electron 负责原生窗口行为、进程恢复、独立 Harness home 和多平台安装包；CodePilot 视觉主题由一个普通的 Client 插件负责。回环地址上的 Web 进程负责全部应用行为和数据 API。
 
 应用读取 Web bundle 在完成启动后输出的 URL，而不是预测端口或增加桌面端专用的就绪接口。BrowserWindow 只接受该 URL 对应本机回环 origin 内的导航，关闭 Node integration，启用 context isolation 和 sandbox，并只提供范围受限的恢复操作与原生目录选择 preload。
 

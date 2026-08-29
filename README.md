@@ -1,5 +1,7 @@
 # Magpie Horch
 
+English | [中文](README.zh.md)
+
 **Magpie Horch** 是基于 [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 构建的桌面端 AI Agent Harness 产品，持续跟进 upstream 版本迭代，并融合自研功能组件。
 
 > Magpie（喜鹊）= 聪明善记、衔接信息 · Horch（德语）= 精准聆听 — 善于聆听、精准衔接的 AI 助手

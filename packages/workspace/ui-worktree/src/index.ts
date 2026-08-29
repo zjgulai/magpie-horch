@@ -238,7 +238,7 @@ export const inject = ['connection', 'workspaceRegistry']
 
 /** Register loopback-only Worktree RPC. */
 export function apply(ctx: Context): void {
-  ctx.effect(() => ctx.connection.rpc.handle(WORKTREE_CHANNEL, async (endpoint, payload, signal) => {
+  const worktreeHandler: import('@deepseek-ai/dsh-client-connection').ConnectionRpcHandler = async (endpoint, payload, signal) => {
     if (signal.aborted) return { ok: false, error: { code: 'cancelled', message: 'request cancelled', details: {} } }
     try {
       if (endpoint === WORKTREE_LIST_ENDPOINT) {
@@ -253,5 +253,6 @@ export function apply(ctx: Context): void {
       ctx.logger.warn(`ui-worktree: Workspace operation failed: ${String(error)}`)
       return internalError('workspace operation failed')
     }
-  }, { authority: 'loopback' }), 'ui-worktree: loopback Workspace RPC')
+  }
+  ctx.effect(() => ctx.connection.rpc.handle(WORKTREE_CHANNEL, worktreeHandler), 'ui-worktree: loopback Workspace RPC')
 }

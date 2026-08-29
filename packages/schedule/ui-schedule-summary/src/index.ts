@@ -65,7 +65,7 @@ export function apply(ctx: Context): void {
     if (event.type === 'schedule/change') cache.delete(String(session.id))
   }), 'ui-schedule-summary: invalidate changed Sessions')
 
-  ctx.effect(() => ctx.connection.rpc.handle(SCHEDULE_SUMMARY_CHANNEL, async (endpoint, payload, signal) => {
+  const summaryHandler: import('@deepseek-ai/dsh-client-connection').ConnectionRpcHandler = async (endpoint, payload, signal) => {
     if (endpoint !== SCHEDULE_SUMMARY_GET_ENDPOINT) {
       return { ok: false, error: { code: 'bad-request', message: 'unknown schedule summary operation', details: { issues: [] } } }
     }
@@ -99,5 +99,6 @@ export function apply(ctx: Context): void {
       ctx.logger.warn(`ui-schedule-summary: Schedule summary read failed: ${String(error)}`)
       return { ok: false, error: { code: 'internal', message: 'schedule summary unavailable', details: {} } }
     }
-  }, { authority: 'loopback' }), 'ui-schedule-summary: loopback summary RPC')
+  }
+  ctx.effect(() => ctx.connection.rpc.handle(SCHEDULE_SUMMARY_CHANNEL, summaryHandler), 'ui-schedule-summary: loopback summary RPC')
 }

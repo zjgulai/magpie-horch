@@ -8,7 +8,7 @@ Pilot Harness 是 DeepSeek Harness 的 CodePilot 风格桌面发行版。Electro
 
 桌面进程在操作系统分配的本机回环端口上启动构建后的 `@deepseek-ai/dsh` CLI，等待它输出已经完成启动的 `dsh web:` URL，然后在启用沙箱的 BrowserWindow 中加载该地址。桌面进程为子进程提供位于 Electron 用户数据目录中的独立 `DSH_HOME`，保留经过脱敏且有长度上限的诊断日志，并可在不重启桌面进程的情况下重启子进程。
 
-Web UI 仍是 [Harness 架构](../../docs/architecture.md)中记录的 DSH 浏览器组合。桌面样式表提供完整的明暗主题变量，并为外壳、侧边栏、项目树、会话输入区、设置、菜单和对话框提供组件级布局；它不修改 agent loop、会话日志、工具管线、LLM 适配器或 Web RPC 实现。
+Web UI 仍是 [Harness 架构](../../docs/architecture.zh.md)中记录的 DSH 浏览器组合。桌面样式表提供完整的明暗主题变量，并为外壳、侧边栏、项目树、会话输入区、设置、菜单和对话框提供组件级布局；它不修改 agent loop、会话日志、工具管线、LLM 适配器或 Web RPC 实现。
 
 项目选择仍属于现有的 `ui-directory-picker-native` 插件。在桌面环境中，该插件使用隔离 preload 提供的原生文件夹对话框；普通 Web 部署继续通过 Host directory-picker provider 工作。
 
