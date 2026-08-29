@@ -4,6 +4,7 @@ import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-workspace/client'
@@ -63,7 +64,7 @@ export function apply(ctx: ClientContext): void {
       controller,
       loadWorktree,
       mutateWorktree,
-      openPath: (path: string) => ctx.workspaces.openPath(path),
+      openPath: (_path: string) => Promise.resolve(),
       addPathToInput: (sessionId: SessionId, path: string) => {
         const actx = ctx.sessions.scope(sessionId)
         if (actx === undefined) throw new Error(`worktree: session "${sessionId}" resolved no scope`)

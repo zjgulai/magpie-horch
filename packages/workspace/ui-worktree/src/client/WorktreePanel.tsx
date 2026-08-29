@@ -39,7 +39,7 @@ export function WorktreePanel({
   const currentSession = useSessions(state => state.current)
   const targetId = useWorkspaces((state): string | undefined => {
     const workspace = currentSession === undefined
-      ? state.items.find(item => item.workspaceId === state.recentWorkspaceId)
+      ? state.items[0]
       : state.items.find(item => item.sessionIds.includes(currentSession))
     return workspace?.workspaceId
   })
