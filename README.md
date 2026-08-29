@@ -27,12 +27,12 @@ English | [中文](README.zh.md)
 2. 打开「终端」，执行：
 
 ```bash
-xattr -cr /Applications/Magpie\ Horch.app
+xattr -cr /Applications/magpie-horch.app
 ```
 
 3. 双击启动即可。
 
-> 若仍提示无法打开，改用：`sudo xattr -d com.apple.quarantine /Applications/Magpie\ Horch.app`
+> 若仍提示无法打开，改用：`sudo xattr -d com.apple.quarantine /Applications/magpie-horch.app`
 
 ## 项目定位
 
